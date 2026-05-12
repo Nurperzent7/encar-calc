@@ -81,28 +81,28 @@ for (const row of data) {
   const rowEngine =
     Number(row["D"])
 
-  let score = 0
+    let score = 0
 
-  for (const word of rowWords) {
-
-    if (
-      word.length > 1 &&
-      titleWords.some((t) => t.includes(word))
-    ) {
-      score++
+    for (const word of rowWords) {
+    
+      if (
+        word.length > 1 &&
+        titleWords.some((t) => t.includes(word))
+      ) {
+        score += 3
+      }
     }
-  }
 
   // бонус за объем
   if (rowEngine === engineCC) {
-    score += 5
+    score ++
   }
   
   const rowYear =
     Number(row["E"])
   
   if (rowYear === year) {
-    score += 10
+    score ++
   }
 
   if (score > bestScore) {
