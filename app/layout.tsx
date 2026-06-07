@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ENCAR Import SaaS",
-  description: "Премиальный сервис расчета импорта авто из Кореи в Казахстан.",
+  title: "avtodom969",
+  description: "Импорт авто из Кореи в Казахстан — расчет стоимости под ключ.",
+  icons: {
+    icon: "/logo.jpg",
+    shortcut: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({

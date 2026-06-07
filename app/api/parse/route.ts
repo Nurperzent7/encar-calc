@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 import * as XLSX from "xlsx"
 import fs from "fs"
 import path from "path"
+import { isHeyDealerUrl, parseHeyDealerUrl } from "@/lib/heydealer"
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
@@ -11,7 +12,7 @@ function getCustomsPrice(
   title: string,
   engine: number,
   year: number
-): number {
+): { price: number; excelYear?: number; carYear?: number; depreciationYears?: number; originalUsd?: number; foundModel?: string } {
 
 
   const filePath =
@@ -28,7 +29,7 @@ function getCustomsPrice(
       filePath,
       "— set CUSTOMS_XLSX_PATH or add public/customs.xlsx (таможня = 0)."
     )
-    return 0
+    return { price: 0 }
   }
 
   try {
@@ -60,10 +61,42 @@ const data = rawData.slice(1)
     const engineCC = Math.round(engine * 1000)
 
 
+    // Определяем серию BMW по кузову
+    const bmwSeriesMatch = normalizedTitle.match(/(\d+)\s+SERIES/i)
+    const bmwChassisMatch = normalizedTitle.match(/\(([GEF]\d{2})\)/i)
+    const bmwChassis = bmwChassisMatch ? bmwChassisMatch[1] : null
+    
+    // Карта кузовов BMW к сериям
+    const bmwChassisToSeries: Record<string, string> = {
+      'G30': '5', 'G31': '5', 'G38': '5',
+      'G20': '3', 'G21': '3', 'G28': '3',
+      'G11': '7', 'G12': '7',
+      'G01': 'X3', 'G02': 'X4', 'G05': 'X5', 'G06': 'X6', 'G07': 'X7',
+      'F30': '3', 'F31': '3', 'F34': '3', 'F35': '3',
+      'F10': '5', 'F11': '5', 'F18': '5',
+      'E90': '3', 'E91': '3', 'E92': '3', 'E93': '3',
+    }
+    
+    let expectedSeries = bmwSeriesMatch ? bmwSeriesMatch[1] : 
+                         (bmwChassis && bmwChassisToSeries[bmwChassis] ? bmwChassisToSeries[bmwChassis] : null)
+    
+    // Если нашли серию через "5 SERIES", убедимся что это не число из "530i"
+    // Проверяем что кузов соответствует (G30 для 5-series и т.д.)
+    if (bmwChassis && expectedSeries && bmwChassisToSeries[bmwChassis] !== expectedSeries) {
+      // Если есть расхождение, используем серию по кузову (она точнее)
+      expectedSeries = bmwChassisToSeries[bmwChassis]
+    }
+    
+    console.log({ bmwChassis, expectedSeries, title: normalizedTitle })
+
+    // Игнорируем общие слова при поиске
+    const commonWords = ['M', 'SPORT', 'COMPETITION', 'XDRIVE', 'SDRIVE', 'PACKAGE', 'EDITION', 'LINE', 'STYLE', 'LUXURY']
+    
     const titleWords =
     normalizedTitle
     .toUpperCase()
-    .match(/[A-Z0-9]+/g) || []
+    .match(/[A-Z0-9]+/g)
+    ?.filter(w => !commonWords.includes(w) && w.length > 1) || []
 
 let bestRow = null
 let bestScore = 0
@@ -76,7 +109,8 @@ for (const row of data) {
     .replace(/[^A-Z0-9 ]/g, " ")
 
     const rowWords =
-    model.match(/[A-Z0-9]+/g) || []
+    model.match(/[A-Z0-9]+/g)
+    ?.filter(w => !commonWords.includes(w) && w.length > 1) || []
 
   const rowEngine =
     Number(row["D"])
@@ -86,16 +120,15 @@ for (const row of data) {
     for (const word of rowWords) {
     
       if (
-        word.length > 1 &&
         titleWords.some((t) => t.includes(word))
       ) {
         score += 3
       }
     }
 
-  // бонус за объем
+  // бонус за объем (важный фактор!)
   if (rowEngine === engineCC) {
-    score ++
+    score += 10
   }
   
   const rowYear =
@@ -103,6 +136,20 @@ for (const row of data) {
   
   if (rowYear === year) {
     score ++
+  }
+
+  // Бонус если серия совпадает
+  if (expectedSeries) {
+    const modelStr = String(row["C"] || "").toUpperCase()
+    // Проверяем что серия в модели совпадает (5-SERIES, 3-SERIES и т.д.)
+    const modelSeriesMatch = modelStr.match(/(\d+)-?SERIES/)
+    if (modelSeriesMatch && modelSeriesMatch[1] === expectedSeries) {
+      score += 15  // Большой бонус за совпадение серии
+    }
+    // Или для X-моделей
+    if (expectedSeries.startsWith('X') && modelStr.includes(`BMW ${expectedSeries}`)) {
+      score += 15
+    }
   }
 
   if (score > bestScore) {
@@ -123,30 +170,44 @@ console.log({
 })
     if (!foundRow) {
       console.log("NOT FOUND:", title)
-      return 0
+      return { price: 0 }
     }
 
-    let excelYear = Number(foundRow["E"])
+    const excelYear = Number(foundRow["E"])
+    const carYear = year
 
-    let usd = Number(
+    let originalUsd = Number(
       String(foundRow["F"] || "0")
         .replace(/\s/g, "")
         .replace(",", "")
     )
     
+    let usd = originalUsd
+    let depreciationYears = 0
+    
     console.log({
       excelPrice: foundRow["F"],
       usd,
     })
-    while (excelYear > year) {
+    
+    let currentYear = excelYear
+    while (currentYear > carYear) {
       usd *= 0.85
-      excelYear--
+      currentYear--
+      depreciationYears++
     }
 
-    return Math.round(usd * 460)
+    return { 
+      price: Math.round(usd * 460),
+      excelYear,
+      carYear,
+      depreciationYears,
+      originalUsd,
+      foundModel: foundRow["C"]
+    }
   } catch (e) {
     console.error("[customs] Failed to read or parse xlsx:", e)
-    return 0
+    return { price: 0 }
   }
 }
 
@@ -170,91 +231,112 @@ export async function POST(req: Request) {
       )
     }
 
-    const response =
-      await fetch(url, {
+    let title = ""
+    let year = 2020
+    let mileage = "Unknown"
+    let krw = 0
+    let finalImages: string[] = []
+    let source: "encar" | "heydealer" = "encar"
+
+    if (isHeyDealerUrl(url)) {
+      const heydealer = await parseHeyDealerUrl(url)
+      title = heydealer.title
+      year = heydealer.year
+      mileage = heydealer.mileage
+      krw = heydealer.krw
+      finalImages = heydealer.images
+      source = "heydealer"
+    } else {
+      const response = await fetch(url, {
         headers: {
-          "User-Agent":
-            "Mozilla/5.0",
+          "User-Agent": "Mozilla/5.0",
         },
       })
 
-    const html =
-      await response.text()
+      const html = await response.text()
+      const $ = cheerio.load(html)
 
-    const $ =
-      cheerio.load(html)
+      const rawTitle =
+        $("meta[property='og:title']").attr("content") ||
+        $("title").text()
 
-    const rawTitle =
-      $("meta[property='og:title']")
-        .attr("content") ||
-      $("title").text()
-
-    const translated =
-      await translate(rawTitle, {
+      const translated = await translate(rawTitle, {
         from: "ko",
         to: "en",
       })
 
-    const title =
-      translated.text
+      title = translated.text
         .replace(/Gyeonggi Used Car.*/i, "")
+        .replace(/Sell My Car/gi, "")
+        .replace(/Buy My Car/gi, "")
+        .replace(/Used Car/gi, "")
         .trim()
 
-    const pageText =
-      $("body").text()
+      const pageText = $("body").text()
+      const priceMatch = pageText.match(/([\d,]+)\s*만원/)
 
-    const priceMatch =
-      pageText.match(
-        /([\d,]+)\s*만원/
-      )
+      if (priceMatch) {
+        krw =
+          Number(priceMatch[1].replace(/,/g, "")) * 10000
+      }
 
-    let krw = 0
+      const mileageMatch = pageText.match(/\b[\d,]+\s?km\b/i)
+      mileage = mileageMatch ? mileageMatch[0] : "Unknown"
 
-    if (priceMatch) {
+      const yearMatch = pageText.match(/\d{2}\/\d{2}식/)
+      year = 2020
 
-      krw =
-        Number(
-          priceMatch[1]
-            .replace(/,/g, "")
-        ) * 10000
+      if (yearMatch) {
+        const shortYear = Number(yearMatch[0].split("/")[0])
+        year = shortYear >= 30 ? 1900 + shortYear : 2000 + shortYear
+      }
+
+      const images = new Set<string>()
+
+      $("img").each((_, el) => {
+        const sources = [
+          $(el).attr("src"),
+          $(el).attr("data-src"),
+          $(el).attr("data-original"),
+          $(el).attr("data-lazy"),
+        ]
+
+        sources.forEach((src) => {
+          if (!src) return
+
+          const fullUrl = src.startsWith("http") ? src : `https:${src}`
+          const valid =
+            (fullUrl.includes(".jpg") ||
+              fullUrl.includes(".jpeg") ||
+              fullUrl.includes(".png") ||
+              fullUrl.includes(".webp")) &&
+            !fullUrl.includes("logo") &&
+            !fullUrl.includes("icon") &&
+            !fullUrl.includes("banner") &&
+            !fullUrl.includes("blank")
+
+          if (valid) images.add(fullUrl)
+        })
+      })
+
+      const bgMatches =
+        html.match(/https?:\/\/[^"' )]+\.(jpg|jpeg|png|webp)/gi) || []
+
+      bgMatches.forEach((img) => {
+        const valid =
+          !img.includes("logo") &&
+          !img.includes("icon") &&
+          !img.includes("banner") &&
+          !img.includes("blank")
+
+        if (valid) images.add(img)
+      })
+
+      finalImages = Array.from(images).slice(0, 50)
     }
 
-    const carPriceKzt =
-      Math.round(krw * 0.36)
-
-    const mileageMatch =
-      pageText.match(
-        /\b[\d,]+\s?km\b/i
-      )
-
-    const mileage =
-      mileageMatch
-        ? mileageMatch[0]
-        : "Unknown"
-
-    const yearMatch =
-      pageText.match(
-        /\d{2}\/\d{2}식/
-      )
-
-    let year = 2020
-
-    if (yearMatch) {
-
-      const shortYear =
-        Number(
-          yearMatch[0]
-            .split("/")[0]
-        )
-
-      year =
-        shortYear >= 30
-          ? 1900 + shortYear
-          : 2000 + shortYear
-    }
-
-    const engine =
-      selectedEngine
+    const carPriceKzt = Math.round(krw * 0.36)
+    const engine = selectedEngine
 
     const logistics =
       1150000
@@ -297,134 +379,56 @@ export async function POST(req: Request) {
         year
       )
       console.log("CUSTOMS RESULT:", customs)
+      
+    const customsKzt = customs.price
 
     const total =
       carPriceKzt +
       logistics +
-      customs +
+      customs.price +
       recycle +
       primary +
       excise +
       broker
 
-      const images = new Set<string>()
-
-// IMG tags
-$("img").each((_, el) => {
-
-  const sources = [
-    $(el).attr("src"),
-    $(el).attr("data-src"),
-    $(el).attr("data-original"),
-    $(el).attr("data-lazy"),
-  ]
-
-  sources.forEach((src) => {
-
-    if (!src) return
-
-    const fullUrl =
-      src.startsWith("http")
-        ? src
-        : `https:${src}`
-
-    const valid =
-      (
-        fullUrl.includes(".jpg") ||
-        fullUrl.includes(".jpeg") ||
-        fullUrl.includes(".png") ||
-        fullUrl.includes(".webp")
-      ) &&
-      !fullUrl.includes("logo") &&
-      !fullUrl.includes("icon") &&
-      !fullUrl.includes("banner") &&
-      !fullUrl.includes("blank")
-
-    if (valid) {
-      images.add(fullUrl)
-    }
-  })
-})
-
-// background-image urls
-const bgMatches =
-  html.match(
-    /https?:\/\/[^"' )]+\.(jpg|jpeg|png|webp)/gi
-  ) || []
-
-bgMatches.forEach((img) => {
-
-  const valid =
-    !img.includes("logo") &&
-    !img.includes("icon") &&
-    !img.includes("banner") &&
-    !img.includes("blank")
-
-  if (valid) {
-    images.add(img)
-  }
-})
-
-const finalImages =
-  Array.from(images).slice(0, 50)
-
     return NextResponse.json({
-
+      source,
       title,
-
       year,
-
-      engine:
-        `${engine.toFixed(1)} л`,
-
+      engine: `${engine.toFixed(1)} л`,
       mileage,
-
-      price:
-        krw.toLocaleString() +
-        " ₩",
-
-      priceKzt:
-        carPriceKzt.toLocaleString() +
-        " ₸",
-
-      logistics:
-        logistics.toLocaleString() +
-        " ₸",
-
-      customs:
-        customs.toLocaleString() +
-        " ₸",
-
-      recycle:
-        recycle.toLocaleString() +
-        " ₸",
-
-      primary:
-        primary.toLocaleString() +
-        " ₸",
-
-      excise:
-        excise.toLocaleString() +
-        " ₸",
-
-      broker:
-        broker.toLocaleString() +
-        " ₸",
-
-      finalTotal:
-        total.toLocaleString() +
-        " ₸",
-
-        images: finalImages,
+      price: krw.toLocaleString() + " ₩",
+      priceKzt: carPriceKzt.toLocaleString() + " ₸",
+      logistics: logistics.toLocaleString() + " ₸",
+      customs: customsKzt.toLocaleString() + " ₸",
+      customsDetails:
+        customs.price > 0
+          ? {
+              foundModel: customs.foundModel,
+              excelYear: customs.excelYear,
+              carYear: customs.carYear,
+              originalPrice: customs.originalUsd,
+              depreciationYears: customs.depreciationYears || 0,
+              depreciationPercent:
+                (customs.depreciationYears || 0) > 0
+                  ? `${(Math.pow(0.85, customs.depreciationYears || 0) * 100).toFixed(1)}%`
+                  : "100%",
+              finalPriceUsd: Math.round(customs.price / 460),
+            }
+          : null,
+      recycle: recycle.toLocaleString() + " ₸",
+      primary: primary.toLocaleString() + " ₸",
+      excise: excise.toLocaleString() + " ₸",
+      broker: broker.toLocaleString() + " ₸",
+      finalTotal: total.toLocaleString() + " ₸",
+      images: finalImages,
     })
-
   } catch (error) {
-
     console.log(error)
 
-    return NextResponse.json(
-      { error: "Parse error" },
-      { status: 500 }
-    )
+    const message =
+      error instanceof Error ? error.message : "Parse error"
+
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
