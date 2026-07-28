@@ -365,12 +365,6 @@ export default function Home() {
                     <div className="text-center text-zinc-500">Введите ссылку для расчета</div>
                   )}
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-4">
-                  <p className="text-xs text-zinc-400">Итоговый статус</p>
-                  <div className="mt-2">
-                    {status ? <Badge className={status.className}>{status.label}</Badge> : <Badge className="text-zinc-300">Ожидается расчет</Badge>}
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </motion.aside>
