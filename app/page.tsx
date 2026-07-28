@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import {
   ArrowRight,
@@ -184,13 +184,6 @@ export default function Home() {
       setLoading(false)
     }
   }
-
-  const status = useMemo(() => {
-    if (!car) return null
-    if (car.total < 17500000) return { label: "Выгодно", className: "text-emerald-300 bg-emerald-500/10 border-emerald-400/30" }
-    if (car.total < 25500000) return { label: "Средняя цена", className: "text-yellow-300 bg-yellow-500/10 border-yellow-400/30" }
-    return { label: "Дорого", className: "text-rose-300 bg-rose-500/10 border-rose-400/30" }
-  }, [car])
 
   const downloadCarData = async () => {
     if (!car) return
@@ -395,7 +388,6 @@ export default function Home() {
                         <Download className="mr-2 h-4 w-4" />
                         Скачать PNG
                       </Button>
-                      {status && <Badge className={status.className}>{status.label}</Badge>}
                     </div>
                   </div>
 
