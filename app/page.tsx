@@ -240,9 +240,6 @@ export default function Home() {
             <h2 className="text-balance text-2xl font-semibold leading-tight md:text-3xl text-zinc-200">
               Импорт авто из Кореи в Казахстан
             </h2>
-            <p className="max-w-xl text-zinc-300 md:text-lg">
-              Моментальный расчет стоимости авто с таможней, логистикой и всеми расходами.
-            </p>
             <div className="flex flex-wrap gap-3">
               <Button size="lg" onClick={() => document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" })}>
                 Рассчитать стоимость <ArrowRight className="ml-2 h-4 w-4" />
