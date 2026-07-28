@@ -209,7 +209,7 @@ export default function Home() {
     }
   }
 
-  const images = car?.images?.length ? car.images : ["https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop"]
+  const images = car?.images?.length ? [...car.images].reverse() : ["https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop"]
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#0A0A0A] text-white">
@@ -401,7 +401,7 @@ export default function Home() {
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <div className="flex w-full gap-2 overflow-x-auto">
-                          {images.slice(0, 8).map((img, i) => (
+                          {images.slice(0, 20).map((img, i) => (
                             <button key={`${img}-${i}`} onClick={() => setActiveImage(i)} className={`h-14 w-20 shrink-0 overflow-hidden rounded-xl border ${i === activeImage ? "border-[#F5C542]" : "border-white/10"}`}>
                               <img src={img} alt={`car-${i}`} className="h-full w-full object-cover" />
                             </button>
