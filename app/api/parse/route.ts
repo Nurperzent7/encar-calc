@@ -332,7 +332,13 @@ export async function POST(req: Request) {
         if (valid) images.add(img)
       })
 
-      finalImages = Array.from(images).slice(0, 50)
+      finalImages = Array.from(images)
+        .sort((a, b) => {
+          const numA = Number(a.match(/_(\d+)\.(jpg|jpeg|png|webp)/i)?.[1] || 0)
+          const numB = Number(b.match(/_(\d+)\.(jpg|jpeg|png|webp)/i)?.[1] || 0)
+          return numA - numB
+        })
+        .slice(0, 50)
     }
 
     const carPriceKzt = Math.round(krw * 0.36)

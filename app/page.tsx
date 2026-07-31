@@ -209,7 +209,7 @@ export default function Home() {
     }
   }
 
-  const images = car?.images?.length ? [...car.images].reverse() : ["https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop"]
+  const images = car?.images?.length ? car.images : ["https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop"]
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#0A0A0A] text-white">
@@ -779,7 +779,7 @@ export default function Home() {
         <footer className="mt-16 border-t border-white/10 py-8 text-sm text-zinc-400">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p>AVTODOM969 · Казахстан</p>
-            <p>© {new Date().getFullYear()} AVTODOM969</p>
+            <p>© 2026 AVTODOM969</p>
           </div>
         </footer>
       </div>
