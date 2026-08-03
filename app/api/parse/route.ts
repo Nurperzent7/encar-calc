@@ -198,7 +198,7 @@ console.log({
     }
 
     return { 
-      price: Math.round(usd * 460),
+      price: Math.round(usd * 520),
       excelYear,
       carYear,
       depreciationYears,
@@ -419,7 +419,7 @@ export async function POST(req: Request) {
                 (customs.depreciationYears || 0) > 0
                   ? `${(Math.pow(0.85, customs.depreciationYears || 0) * 100).toFixed(1)}%`
                   : "100%",
-              finalPriceUsd: Math.round(customs.price / 460),
+              finalPriceUsd: Math.round(customs.price / 520),
             }
           : null,
       recycle: recycle.toLocaleString() + " ₸",
