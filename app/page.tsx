@@ -208,23 +208,42 @@ export default function Home() {
     if (!element) return
 
     try {
-      const html2pdf = (await import("html2pdf.js")).default
-      const filename = `${car.title.replace(/\s+/g, "_")}_offer.pdf`
-      await html2pdf()
-        .set({
-          margin: [8, 8, 8, 8],
-          filename,
-          image: { type: "jpeg", quality: 0.95 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: "#ffffff",
-          },
-          jsPDF: { unit: "mm", format: "a3", orientation: "portrait" },
-        })
-        .from(element)
-        .save()
+      const html2canvas = (await import("html2canvas")).default
+      const { jsPDF } = await import("jspdf")
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+      })
+
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a3" })
+      const pageW = pdf.internal.pageSize.getWidth()
+      const pageH = pdf.internal.pageSize.getHeight()
+      const margin = 8
+      const maxW = pageW - margin * 2
+      const maxH = pageH - margin * 2
+
+      const ratio = Math.min(maxW / canvas.width, maxH / canvas.height)
+      const drawW = canvas.width * ratio
+      const drawH = canvas.height * ratio
+      const offsetX = margin + (maxW - drawW) / 2
+      const offsetY = margin + Math.max(0, (maxH - drawH) / 2)
+
+      pdf.addImage(
+        canvas.toDataURL("image/jpeg", 0.95),
+        "JPEG",
+        offsetX,
+        offsetY,
+        drawW,
+        drawH
+      )
+      pdf.save(`${car.title.replace(/\s+/g, "_")}_offer.pdf`)
     } catch (err) {
       console.error("PDF generation failed:", err)
       alert("Не удалось создать PDF. Попробуйте еще раз.")
@@ -560,114 +579,118 @@ export default function Home() {
 
           {/* Элемент для PDF генерации */}
           {car && (
-            <div id="car-pdf-content" className="pdf-content" style={{ width: "297mm", minHeight: "420mm", background: "#fff", color: "#1a1a1a", padding: "20px", fontFamily: "Arial, sans-serif", margin: "20px auto", boxShadow: "0 4px 30px rgba(0,0,0,0.4)", position: "relative", zIndex: 1 }}>
+            <div
+              id="car-pdf-content"
+              className="pdf-content"
+              style={{
+                width: "100%",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                background: "#fff",
+                color: "#1a1a1a",
+                padding: "16px",
+                fontFamily: "Arial, Helvetica, sans-serif",
+                margin: "20px auto 0",
+                boxShadow: "0 4px 30px rgba(0,0,0,0.4)",
+                position: "relative",
+                zIndex: 1,
+                overflow: "hidden",
+              }}
+            >
               {/* Шапка */}
-              <div style={{ textAlign: "center", marginBottom: "20px", paddingBottom: "15px", borderBottom: "3px solid #F5C542" }}>
-                <h1 style={{ fontSize: "22px", fontWeight: "700", margin: "0", color: "#1a1a1a" }}>ПРЕДЛОЖЕНИЕ ДЛЯ КЛИЕНТА</h1>
-                <p style={{ fontSize: "12px", color: "#666", margin: "5px 0 0" }}>AVTODOM969 · Premium Auto Import from Korea</p>
+              <div style={{ textAlign: "center", marginBottom: "14px", paddingBottom: "10px", borderBottom: "3px solid #F5C542", boxSizing: "border-box" }}>
+                <h1 style={{ fontSize: "20px", fontWeight: 700, margin: 0, color: "#1a1a1a" }}>ПРЕДЛОЖЕНИЕ ДЛЯ КЛИЕНТА</h1>
+                <p style={{ fontSize: "11px", color: "#666", margin: "4px 0 0" }}>AVTODOM969 · Premium Auto Import from Korea</p>
               </div>
 
-              <div style={{ display: "flex", gap: "15px", marginBottom: "25px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.15fr", gap: "14px", marginBottom: "14px", boxSizing: "border-box" }}>
                 {/* Левая колонка - фото и инфо */}
-                <div style={{ width: "42%" }}>
-                  <div style={{ height: "180px", overflow: "hidden", borderRadius: "8px", marginBottom: "12px", backgroundColor: "#f0f0f0" }}>
-                    <img src={`/api/image?url=${encodeURIComponent(images[0])}`} alt="Car" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ minWidth: 0, boxSizing: "border-box" }}>
+                  <div style={{ height: "170px", overflow: "hidden", borderRadius: "8px", marginBottom: "10px", backgroundColor: "#f0f0f0" }}>
+                    <img src={`/api/image?url=${encodeURIComponent(images[0])}`} alt="Car" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   </div>
-                  <h2 style={{ fontSize: "15px", fontWeight: "bold", margin: "0 0 10px", lineHeight: "1.4", color: "#000" }}>{car.title}</h2>
-                  
+                  <h2 style={{ fontSize: "14px", fontWeight: 700, margin: "0 0 8px", lineHeight: 1.35, color: "#000", wordBreak: "break-word" }}>{car.title}</h2>
+
                   <div style={{ fontSize: "12px", color: "#333" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #e0e0e0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "6px", padding: "5px 0", borderBottom: "1px solid #e0e0e0" }}>
                       <span style={{ color: "#666" }}>Год:</span>
-                      <span style={{ fontWeight: "600" }}>{car.year}</span>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{car.year}</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #e0e0e0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "6px", padding: "5px 0", borderBottom: "1px solid #e0e0e0" }}>
                       <span style={{ color: "#666" }}>Пробег:</span>
-                      <span style={{ fontWeight: "600" }}>{car.mileage}</span>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{car.mileage}</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "6px", padding: "5px 0" }}>
                       <span style={{ color: "#666" }}>Цена в Корее:</span>
-                      <span style={{ fontWeight: "bold", color: "#d4a017" }}>{car.price}</span>
+                      <span style={{ fontWeight: 700, color: "#d4a017", whiteSpace: "nowrap" }}>{car.price}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Правая колонка - прайс */}
-                <div style={{ width: "55%", backgroundColor: "#f5f5f5", padding: "15px", borderRadius: "8px", border: "1px solid #ddd" }}>
-                  <div style={{ backgroundColor: "#F5C542", padding: "10px", borderRadius: "5px", textAlign: "center", marginBottom: "12px" }}>
-                    <h3 style={{ fontSize: "14px", fontWeight: "bold", margin: "0", color: "#000" }}>ЧТО ВХОДИТ В СТОИМОСТЬ</h3>
+                <div style={{ minWidth: 0, backgroundColor: "#f5f5f5", padding: "12px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" }}>
+                  <div style={{ backgroundColor: "#F5C542", padding: "8px", borderRadius: "5px", textAlign: "center", marginBottom: "10px" }}>
+                    <h3 style={{ fontSize: "13px", fontWeight: 700, margin: 0, color: "#000" }}>ЧТО ВХОДИТ В СТОИМОСТЬ</h3>
                   </div>
-                  
-                  {/* Стоимость в USD */}
-                  <div style={{ fontSize: "11px", color: "#333", marginBottom: "10px" }}>
+
+                  <div style={{ fontSize: "11px", color: "#333", marginBottom: "8px" }}>
                     <p style={{ fontSize: "10px", color: "#666", margin: "0 0 4px" }}>Стоимость в Корее:</p>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "4px 10px", alignItems: "center" }}>
                       <span>Фактическая стоимость:</span>
-                      <span style={{ fontWeight: "500" }}>${new Intl.NumberFormat("en-US").format(car.carPriceUsd)}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>${new Intl.NumberFormat("en-US").format(car.carPriceUsd)}</span>
                       <span>Логистика:</span>
-                      <span style={{ fontWeight: "500" }}>${new Intl.NumberFormat("en-US").format(car.logisticsUsd)}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>${new Intl.NumberFormat("en-US").format(car.logisticsUsd)}</span>
                       <span>Услуга:</span>
-                      <span style={{ fontWeight: "500" }}>${car.serviceFeeUsd}</span>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>${car.serviceFeeUsd}</span>
                     </div>
                   </div>
 
-                  {/* Разделитель */}
-                  <div style={{ textAlign: "center", margin: "8px 0", fontSize: "9px", color: "#666" }}>
+                  <div style={{ textAlign: "center", margin: "6px 0", fontSize: "9px", color: "#666" }}>
                     — расходы оформление по прибытию авто —
                   </div>
 
-                  {/* Расходы в KZT */}
                   <div style={{ fontSize: "11px", color: "#333" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "4px 10px", alignItems: "center" }}>
                       <span>Растаможка (пошлина+НДС):</span>
-                      <span style={{ fontWeight: "500" }}>{new Intl.NumberFormat("ru-RU").format(Number(car.customs || 0))} ₸</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(Number(car.customs || 0))} ₸</span>
                       <span>Утильсбор:</span>
-                      <span style={{ fontWeight: "500" }}>{new Intl.NumberFormat("ru-RU").format(car.util)} ₸</span>
-                    </div>
-                    {car.excise > 0 && (
-                      <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
-                        <span>Акциз (двигатель ≥3.0L):</span>
-                        <span style={{ fontWeight: "500" }}>{new Intl.NumberFormat("ru-RU").format(car.excise)} ₸</span>
-                      </div>
-                    )}
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(car.util)} ₸</span>
+                      {car.excise > 0 && (
+                        <>
+                          <span>Акциз (двигатель ≥3.0L):</span>
+                          <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(car.excise)} ₸</span>
+                        </>
+                      )}
                       <span>Первичная регистрация:</span>
-                      <span style={{ fontWeight: "500" }}>{new Intl.NumberFormat("ru-RU").format(car.firstReg)} ₸</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "2px 0" }}>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(car.firstReg)} ₸</span>
                       <span>СВХ расходы:</span>
-                      <span style={{ fontWeight: "500" }}>{new Intl.NumberFormat("ru-RU").format(car.svhExpenses)} ₸</span>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(car.svhExpenses)} ₸</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "8px 0 0", paddingTop: "6px", borderTop: "2px solid #F5C542", fontWeight: "bold", fontSize: "12px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "8px 10px", marginTop: "8px", paddingTop: "8px", borderTop: "2px solid #F5C542", fontWeight: 700, fontSize: "13px", alignItems: "center" }}>
                       <span>Стоимость под ключ:</span>
-                      <span>{new Intl.NumberFormat("ru-RU").format(car.total)} ₸</span>
+                      <span style={{ whiteSpace: "nowrap", textAlign: "right", color: "#000" }}>{new Intl.NumberFormat("ru-RU").format(car.total)} ₸</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Сетка фото */}
-              <div style={{ marginBottom: "20px" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: "600", margin: "0 0 12px", color: "#666" }}>ФОТОГРАФИИ АВТОМОБИЛЯ:</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
+              <div style={{ marginBottom: "12px", boxSizing: "border-box" }}>
+                <h3 style={{ fontSize: "12px", fontWeight: 600, margin: "0 0 8px", color: "#666" }}>ФОТОГРАФИИ АВТОМОБИЛЯ:</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
                   {images.map((img, i) => (
-                    <div key={img} style={{ height: "100px", overflow: "hidden", borderRadius: "6px" }}>
-                      <img src={`/api/image?url=${encodeURIComponent(img)}`} alt={`car-${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <div key={img} style={{ height: "78px", overflow: "hidden", borderRadius: "5px", background: "#eee" }}>
+                      <img src={`/api/image?url=${encodeURIComponent(img)}`} alt={`car-${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Контакты */}
-              <div style={{ background: "linear-gradient(135deg, #0088cc 0%, #0077b5 100%)", color: "white", padding: "18px", borderRadius: "10px", textAlign: "center" }}>
-                <p style={{ fontSize: "15px", fontWeight: "600", margin: "0 0 5px" }}>Готовы к покупке? Свяжитесь с нами!</p>
-                <p style={{ fontSize: "18px", fontWeight: "700", margin: "5px 0" }}>Telegram: @avtodom969</p>
-                <p style={{ fontSize: "12px", margin: "5px 0 0", opacity: "0.9" }}>https://t.me/avtodom969</p>
+              <div style={{ background: "linear-gradient(135deg, #0088cc 0%, #0077b5 100%)", color: "white", padding: "14px", borderRadius: "8px", textAlign: "center", boxSizing: "border-box" }}>
+                <p style={{ fontSize: "14px", fontWeight: 600, margin: "0 0 4px" }}>Готовы к покупке? Свяжитесь с нами!</p>
+                <p style={{ fontSize: "16px", fontWeight: 700, margin: "4px 0" }}>Telegram: @avtodom969</p>
+                <p style={{ fontSize: "11px", margin: "4px 0 0", opacity: 0.9 }}>https://t.me/avtodom969</p>
               </div>
             </div>
           )}
