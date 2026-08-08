@@ -222,10 +222,10 @@ export default function Home() {
         windowHeight: element.scrollHeight,
       })
 
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a3" })
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
       const pageW = pdf.internal.pageSize.getWidth()
       const pageH = pdf.internal.pageSize.getHeight()
-      const margin = 8
+      const margin = 6
       const maxW = pageW - margin * 2
       const maxH = pageH - margin * 2
 
@@ -588,7 +588,7 @@ export default function Home() {
                 boxSizing: "border-box",
                 background: "#fff",
                 color: "#1a1a1a",
-                padding: "16px",
+                padding: "12px",
                 fontFamily: "Arial, Helvetica, sans-serif",
                 margin: "20px auto 0",
                 boxShadow: "0 4px 30px rgba(0,0,0,0.4)",
@@ -598,29 +598,29 @@ export default function Home() {
               }}
             >
               {/* Шапка */}
-              <div style={{ textAlign: "center", marginBottom: "14px", paddingBottom: "10px", borderBottom: "3px solid #F5C542", boxSizing: "border-box" }}>
-                <h1 style={{ fontSize: "20px", fontWeight: 700, margin: 0, color: "#1a1a1a" }}>ПРЕДЛОЖЕНИЕ ДЛЯ КЛИЕНТА</h1>
-                <p style={{ fontSize: "11px", color: "#666", margin: "4px 0 0" }}>AVTODOM969 · Premium Auto Import from Korea</p>
+              <div style={{ textAlign: "center", marginBottom: "10px", paddingBottom: "8px", borderBottom: "2px solid #F5C542", boxSizing: "border-box" }}>
+                <h1 style={{ fontSize: "16px", fontWeight: 700, margin: 0, color: "#1a1a1a" }}>ПРЕДЛОЖЕНИЕ ДЛЯ КЛИЕНТА</h1>
+                <p style={{ fontSize: "10px", color: "#666", margin: "3px 0 0" }}>AVTODOM969 · Premium Auto Import from Korea</p>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.15fr", gap: "14px", marginBottom: "14px", boxSizing: "border-box" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: "10px", marginBottom: "10px", boxSizing: "border-box" }}>
                 {/* Левая колонка - фото и инфо */}
                 <div style={{ minWidth: 0, boxSizing: "border-box" }}>
-                  <div style={{ height: "170px", overflow: "hidden", borderRadius: "8px", marginBottom: "10px", backgroundColor: "#f0f0f0" }}>
+                  <div style={{ height: "130px", overflow: "hidden", borderRadius: "6px", marginBottom: "8px", backgroundColor: "#f0f0f0" }}>
                     <img src={`/api/image?url=${encodeURIComponent(images[0])}`} alt="Car" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   </div>
-                  <h2 style={{ fontSize: "14px", fontWeight: 700, margin: "0 0 8px", lineHeight: 1.35, color: "#000", wordBreak: "break-word" }}>{car.title}</h2>
+                  <h2 style={{ fontSize: "12px", fontWeight: 700, margin: "0 0 6px", lineHeight: 1.3, color: "#000", wordBreak: "break-word" }}>{car.title}</h2>
 
-                  <div style={{ fontSize: "12px", color: "#333" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "6px", padding: "5px 0", borderBottom: "1px solid #e0e0e0" }}>
+                  <div style={{ fontSize: "10px", color: "#333" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "4px", padding: "3px 0", borderBottom: "1px solid #e0e0e0" }}>
                       <span style={{ color: "#666" }}>Год:</span>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{car.year}</span>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "6px", padding: "5px 0", borderBottom: "1px solid #e0e0e0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "4px", padding: "3px 0", borderBottom: "1px solid #e0e0e0" }}>
                       <span style={{ color: "#666" }}>Пробег:</span>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{car.mileage}</span>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "6px", padding: "5px 0" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "4px", padding: "3px 0" }}>
                       <span style={{ color: "#666" }}>Цена в Корее:</span>
                       <span style={{ fontWeight: 700, color: "#d4a017", whiteSpace: "nowrap" }}>{car.price}</span>
                     </div>
@@ -628,15 +628,15 @@ export default function Home() {
                 </div>
 
                 {/* Правая колонка - прайс */}
-                <div style={{ minWidth: 0, backgroundColor: "#f5f5f5", padding: "12px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" }}>
-                  <div style={{ backgroundColor: "#F5C542", padding: "8px", borderRadius: "5px", textAlign: "center", marginBottom: "10px" }}>
-                    <h3 style={{ fontSize: "13px", fontWeight: 700, margin: 0, color: "#000" }}>ЧТО ВХОДИТ В СТОИМОСТЬ</h3>
+                <div style={{ minWidth: 0, backgroundColor: "#f5f5f5", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }}>
+                  <div style={{ backgroundColor: "#F5C542", padding: "6px", borderRadius: "4px", textAlign: "center", marginBottom: "8px" }}>
+                    <h3 style={{ fontSize: "11px", fontWeight: 700, margin: 0, color: "#000" }}>ЧТО ВХОДИТ В СТОИМОСТЬ</h3>
                   </div>
 
-                  <div style={{ fontSize: "11px", color: "#333", marginBottom: "8px" }}>
-                    <p style={{ fontSize: "10px", color: "#666", margin: "0 0 4px" }}>Стоимость в Корее:</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "4px 10px", alignItems: "center" }}>
-                      <span>Фактическая стоимость:</span>
+                  <div style={{ fontSize: "10px", color: "#333", marginBottom: "6px" }}>
+                    <p style={{ fontSize: "9px", color: "#666", margin: "0 0 3px" }}>Стоимость в Корее:</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: "2px 8px", alignItems: "center" }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>Фактическая стоимость:</span>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>${new Intl.NumberFormat("en-US").format(car.carPriceUsd)}</span>
                       <span>Логистика:</span>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>${new Intl.NumberFormat("en-US").format(car.logisticsUsd)}</span>
@@ -645,13 +645,13 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div style={{ textAlign: "center", margin: "6px 0", fontSize: "9px", color: "#666" }}>
+                  <div style={{ textAlign: "center", margin: "4px 0", fontSize: "8px", color: "#666" }}>
                     — расходы оформление по прибытию авто —
                   </div>
 
-                  <div style={{ fontSize: "11px", color: "#333" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "4px 10px", alignItems: "center" }}>
-                      <span>Растаможка (пошлина+НДС):</span>
+                  <div style={{ fontSize: "10px", color: "#333" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: "2px 8px", alignItems: "center" }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>Растаможка (пошлина+НДС):</span>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(Number(car.customs || 0))} ₸</span>
                       <span>Утильсбор:</span>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(car.util)} ₸</span>
@@ -666,7 +666,7 @@ export default function Home() {
                       <span>СВХ расходы:</span>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "right" }}>{new Intl.NumberFormat("ru-RU").format(car.svhExpenses)} ₸</span>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "8px 10px", marginTop: "8px", paddingTop: "8px", borderTop: "2px solid #F5C542", fontWeight: 700, fontSize: "13px", alignItems: "center" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: "6px 8px", marginTop: "6px", paddingTop: "6px", borderTop: "2px solid #F5C542", fontWeight: 700, fontSize: "11px", alignItems: "center" }}>
                       <span>Стоимость под ключ:</span>
                       <span style={{ whiteSpace: "nowrap", textAlign: "right", color: "#000" }}>{new Intl.NumberFormat("ru-RU").format(car.total)} ₸</span>
                     </div>
@@ -675,11 +675,11 @@ export default function Home() {
               </div>
 
               {/* Сетка фото */}
-              <div style={{ marginBottom: "12px", boxSizing: "border-box" }}>
-                <h3 style={{ fontSize: "12px", fontWeight: 600, margin: "0 0 8px", color: "#666" }}>ФОТОГРАФИИ АВТОМОБИЛЯ:</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
+              <div style={{ marginBottom: "8px", boxSizing: "border-box" }}>
+                <h3 style={{ fontSize: "10px", fontWeight: 600, margin: "0 0 6px", color: "#666" }}>ФОТОГРАФИИ АВТОМОБИЛЯ:</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "4px" }}>
                   {images.map((img, i) => (
-                    <div key={img} style={{ height: "78px", overflow: "hidden", borderRadius: "5px", background: "#eee" }}>
+                    <div key={img} style={{ height: "54px", overflow: "hidden", borderRadius: "4px", background: "#eee" }}>
                       <img src={`/api/image?url=${encodeURIComponent(img)}`} alt={`car-${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     </div>
                   ))}
@@ -687,10 +687,10 @@ export default function Home() {
               </div>
 
               {/* Контакты */}
-              <div style={{ background: "linear-gradient(135deg, #0088cc 0%, #0077b5 100%)", color: "white", padding: "14px", borderRadius: "8px", textAlign: "center", boxSizing: "border-box" }}>
-                <p style={{ fontSize: "14px", fontWeight: 600, margin: "0 0 4px" }}>Готовы к покупке? Свяжитесь с нами!</p>
-                <p style={{ fontSize: "16px", fontWeight: 700, margin: "4px 0" }}>Telegram: @avtodom969</p>
-                <p style={{ fontSize: "11px", margin: "4px 0 0", opacity: 0.9 }}>https://t.me/avtodom969</p>
+              <div style={{ background: "linear-gradient(135deg, #0088cc 0%, #0077b5 100%)", color: "white", padding: "10px", borderRadius: "6px", textAlign: "center", boxSizing: "border-box" }}>
+                <p style={{ fontSize: "12px", fontWeight: 600, margin: "0 0 2px" }}>Готовы к покупке? Свяжитесь с нами!</p>
+                <p style={{ fontSize: "14px", fontWeight: 700, margin: "2px 0" }}>Telegram: @avtodom969</p>
+                <p style={{ fontSize: "10px", margin: "2px 0 0", opacity: 0.9 }}>https://t.me/avtodom969</p>
               </div>
             </div>
           )}
