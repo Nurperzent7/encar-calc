@@ -158,12 +158,26 @@ export default function Home() {
         .replace(/[,:]+$/, "")
         .trim()
 
+      const uniqueImages = (() => {
+        const seen = new Set<string>()
+        const out: string[] = []
+        for (const raw of Array.isArray(data.images) ? data.images : []) {
+          const url = String(raw).replace(/&amp;/g, "&")
+          const key = url.match(/(\d+_\d+)\.(jpg|jpeg|png|webp)/i)?.[1]?.toLowerCase() || url.split("?")[0]
+          if (seen.has(key)) continue
+          seen.add(key)
+          out.push(url)
+          if (out.length >= 20) break
+        }
+        return out
+      })()
+
       setCar({
         title: cleanTitle,
         year: data.year || "Unknown",
         mileage: data.mileage || "Unknown",
         price: formatKrw(krwPrice),
-        images: Array.isArray(data.images) ? data.images : [],
+        images: uniqueImages,
         customs,
         customsDetails: data.customsDetails,
         carPriceUsd,
@@ -410,8 +424,8 @@ export default function Home() {
                         </Button>
                         <div className="flex w-full gap-2 overflow-x-auto">
                           {images.slice(0, 20).map((img, i) => (
-                            <button key={`${img}-${i}`} onClick={() => setActiveImage(i)} className={`h-14 w-20 shrink-0 overflow-hidden rounded-xl border ${i === activeImage ? "border-[#F5C542]" : "border-white/10"}`}>
-                              <img src={img} alt={`car-${i}`} className="h-full w-full object-cover" />
+                            <button key={img} onClick={() => setActiveImage(i)} className={`h-14 w-20 shrink-0 overflow-hidden rounded-xl border ${i === activeImage ? "border-[#F5C542]" : "border-white/10"}`}>
+                              <img src={img} alt={`car-${i + 1}`} className="h-full w-full object-cover" />
                             </button>
                           ))}
                         </div>
