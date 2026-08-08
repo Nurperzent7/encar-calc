@@ -278,7 +278,7 @@ export default function Home() {
                   placeholder="Вставьте ссылку HeyDealer"
                 />
                 <Select value={engine} onChange={(e) => setEngine(e.target.value)}>
-                  {["1.0", "1.3", "1.5", "1.6", "2.0", "2.2", "2.5", "3.0", "3.3", "3.5", "4.0", "4.4", "5.0", "5.5", "6.0", "6.2"].map((item) => (
+                  {["1.0", "1.3", "1.5", "1.6", "2.0", "2.2", "2.4", "2.5", "3.0", "3.3", "3.5", "4.0", "4.4", "5.0", "5.5", "6.0", "6.2"].map((item) => (
                     <option key={item} value={item}>{item} л</option>
                   ))}
                 </Select>
@@ -341,9 +341,14 @@ export default function Home() {
                 <div className="space-y-3 text-sm text-zinc-300">
                   {car ? (
                     <>
-                      <div className="flex items-center justify-between">
-                        <span>Авто + Логистика + Услуга:</span>
-                        <span>${new Intl.NumberFormat("en-US").format(car.carPriceUsd + car.logisticsUsd + car.serviceFeeUsd)}</span>
+                      <div className="flex items-start justify-between gap-3">
+                        <span>Цена до Алматы:</span>
+                        <span className="text-right">
+                          ${new Intl.NumberFormat("en-US").format(car.carPriceUsd + car.logisticsUsd + car.serviceFeeUsd)}
+                          <span className="mt-0.5 block text-xs text-zinc-500">
+                            {formatKzt(car.carPriceKzt + car.logistics + car.serviceFee)}
+                          </span>
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Расходы в Казахстане:</span>
