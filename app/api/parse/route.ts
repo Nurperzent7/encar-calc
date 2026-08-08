@@ -8,20 +8,25 @@ import { isHeyDealerUrl, parseHeyDealerUrl } from "@/lib/heydealer"
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
+/** Таможня ₸ = цена из таблицы ($) после износа × 520 */
+const CUSTOMS_USD_TO_KZT = 520
+
 function getCustomsPrice(
   title: string,
   engine: number,
   year: number
-): { price: number; excelYear?: number; carYear?: number; depreciationYears?: number; originalUsd?: number; foundModel?: string } {
-
-
+): {
+  price: number
+  excelYear?: number
+  carYear?: number
+  depreciationYears?: number
+  originalUsd?: number
+  finalUsd?: number
+  foundModel?: string
+} {
   const filePath =
     process.env.CUSTOMS_XLSX_PATH ||
-    path.join(
-      process.cwd(),
-      "public",
-      "customs.xlsx"
-    )
+    path.join(process.cwd(), "public", "customs.xlsx")
 
   if (!fs.existsSync(filePath)) {
     console.warn(
@@ -35,139 +40,171 @@ function getCustomsPrice(
   try {
     const buf = fs.readFileSync(filePath)
     const workbook = XLSX.read(buf, { type: "buffer" })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    const rawData: any[] = XLSX.utils.sheet_to_json(sheet, { header: "A" })
+    const data = rawData.slice(1)
 
-    const sheet =
-      workbook.Sheets[workbook.SheetNames[0]]
-
-      const rawData: any[] =
-  XLSX.utils.sheet_to_json(sheet, {
-    header: "A",
-  })
-
-const data = rawData.slice(1)
-      console.log(data[0])
-
-      const normalizedTitle = title
-  .toUpperCase()
-  .replace(/SELL MY CAR/gi, "")
-  .replace(/BUY MY CAR/gi, "")
-  .replace(/USED CAR/gi, "")
-  .replace(/SEOUL/gi, "")
-  .replace(/GYEONGGI/gi, "")
-  .replace(/[^A-Z0-9 ]/g, " ")
-  .replace(/\s+/g, " ")
-  .trim()
+    const normalizedTitle = title
+      .toUpperCase()
+      .replace(/SELL MY CAR/gi, "")
+      .replace(/BUY MY CAR/gi, "")
+      .replace(/USED CAR/gi, "")
+      .replace(/SEOUL/gi, "")
+      .replace(/GYEONGGI/gi, "")
+      .replace(/[^A-Z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
 
     const engineCC = Math.round(engine * 1000)
-
 
     // Определяем серию BMW по кузову
     const bmwSeriesMatch = normalizedTitle.match(/(\d+)\s+SERIES/i)
     const bmwChassisMatch = normalizedTitle.match(/\(([GEF]\d{2})\)/i)
     const bmwChassis = bmwChassisMatch ? bmwChassisMatch[1] : null
-    
-    // Карта кузовов BMW к сериям
+
     const bmwChassisToSeries: Record<string, string> = {
-      'G30': '5', 'G31': '5', 'G38': '5',
-      'G20': '3', 'G21': '3', 'G28': '3',
-      'G11': '7', 'G12': '7',
-      'G01': 'X3', 'G02': 'X4', 'G05': 'X5', 'G06': 'X6', 'G07': 'X7',
-      'F30': '3', 'F31': '3', 'F34': '3', 'F35': '3',
-      'F10': '5', 'F11': '5', 'F18': '5',
-      'E90': '3', 'E91': '3', 'E92': '3', 'E93': '3',
+      G30: "5",
+      G31: "5",
+      G38: "5",
+      G20: "3",
+      G21: "3",
+      G28: "3",
+      G11: "7",
+      G12: "7",
+      G01: "X3",
+      G02: "X4",
+      G05: "X5",
+      G06: "X6",
+      G07: "X7",
+      F30: "3",
+      F31: "3",
+      F34: "3",
+      F35: "3",
+      F10: "5",
+      F11: "5",
+      F18: "5",
+      E90: "3",
+      E91: "3",
+      E92: "3",
+      E93: "3",
     }
-    
-    let expectedSeries = bmwSeriesMatch ? bmwSeriesMatch[1] : 
-                         (bmwChassis && bmwChassisToSeries[bmwChassis] ? bmwChassisToSeries[bmwChassis] : null)
-    
-    // Если нашли серию через "5 SERIES", убедимся что это не число из "530i"
-    // Проверяем что кузов соответствует (G30 для 5-series и т.д.)
-    if (bmwChassis && expectedSeries && bmwChassisToSeries[bmwChassis] !== expectedSeries) {
-      // Если есть расхождение, используем серию по кузову (она точнее)
+
+    let expectedSeries = bmwSeriesMatch
+      ? bmwSeriesMatch[1]
+      : bmwChassis && bmwChassisToSeries[bmwChassis]
+        ? bmwChassisToSeries[bmwChassis]
+        : null
+
+    if (
+      bmwChassis &&
+      expectedSeries &&
+      bmwChassisToSeries[bmwChassis] !== expectedSeries
+    ) {
       expectedSeries = bmwChassisToSeries[bmwChassis]
     }
-    
-    console.log({ bmwChassis, expectedSeries, title: normalizedTitle })
 
-    // Игнорируем общие слова при поиске
-    const commonWords = ['M', 'SPORT', 'COMPETITION', 'XDRIVE', 'SDRIVE', 'PACKAGE', 'EDITION', 'LINE', 'STYLE', 'LUXURY']
-    
+    const commonWords = [
+      "M",
+      "SPORT",
+      "COMPETITION",
+      "XDRIVE",
+      "SDRIVE",
+      "PACKAGE",
+      "EDITION",
+      "LINE",
+      "STYLE",
+      "LUXURY",
+    ]
+
     const titleWords =
-    normalizedTitle
-    .toUpperCase()
-    .match(/[A-Z0-9]+/g)
-    ?.filter(w => !commonWords.includes(w) && w.length > 1) || []
+      normalizedTitle
+        .match(/[A-Z0-9]+/g)
+        ?.filter((w) => !commonWords.includes(w) && w.length > 1) || []
 
-let bestRow = null
-let bestScore = 0
+    let bestRow: any = null
+    let bestScore = 0
 
-for (const row of data) {
+    // Ищем строку: бренд + название + объём + год
+    for (const row of data) {
+      const brand = String(row["B"] || "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9 ]/g, " ")
+        .trim()
+      const model = String(row["C"] || "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9 ]/g, " ")
+        .trim()
+      const rowEngine = Number(row["D"])
+      const rowYear = Number(row["E"])
 
-  const model =
-  String(row["C"] || "")
-    .toUpperCase()
-    .replace(/[^A-Z0-9 ]/g, " ")
+      const brandWords =
+        brand.match(/[A-Z0-9]+/g)?.filter((w) => w.length > 1) || []
+      const modelWords =
+        model
+          .match(/[A-Z0-9]+/g)
+          ?.filter((w) => !commonWords.includes(w) && w.length > 1) || []
 
-    const rowWords =
-    model.match(/[A-Z0-9]+/g)
-    ?.filter(w => !commonWords.includes(w) && w.length > 1) || []
+      let score = 0
 
-  const rowEngine =
-    Number(row["D"])
+      // Бренд
+      for (const word of brandWords) {
+        if (titleWords.some((t) => t === word || t.includes(word) || word.includes(t))) {
+          score += 12
+        }
+      }
 
-    let score = 0
+      // Название / модель
+      for (const word of modelWords) {
+        if (titleWords.some((t) => t.includes(word) || word.includes(t))) {
+          score += 3
+        }
+      }
 
-    for (const word of rowWords) {
-    
-      if (
-        titleWords.some((t) => t.includes(word))
-      ) {
-        score += 3
+      // Объём
+      if (rowEngine === engineCC) {
+        score += 20
+      } else if (Math.abs(rowEngine - engineCC) <= 100) {
+        score += 5
+      }
+
+      // Год
+      if (rowYear === year) {
+        score += 15
+      } else if (rowYear > year) {
+        // ближе к году авто — лучше (база для ×0.85)
+        score += Math.max(0, 8 - (rowYear - year))
+      }
+
+      if (expectedSeries) {
+        const modelSeriesMatch = model.match(/(\d+)-?SERIES/)
+        if (modelSeriesMatch && modelSeriesMatch[1] === expectedSeries) {
+          score += 15
+        }
+        if (
+          expectedSeries.startsWith("X") &&
+          (model.includes(expectedSeries) || brand.includes("BMW"))
+        ) {
+          if (model.includes(expectedSeries)) score += 15
+        }
+      }
+
+      if (score > bestScore) {
+        bestScore = score
+        bestRow = row
       }
     }
 
-  // бонус за объем (важный фактор!)
-  if (rowEngine === engineCC) {
-    score += 10
-  }
-  
-  const rowYear =
-    Number(row["E"])
-  
-  if (rowYear === year) {
-    score ++
-  }
+    const foundRow = bestScore >= 3 ? bestRow : null
 
-  // Бонус если серия совпадает
-  if (expectedSeries) {
-    const modelStr = String(row["C"] || "").toUpperCase()
-    // Проверяем что серия в модели совпадает (5-SERIES, 3-SERIES и т.д.)
-    const modelSeriesMatch = modelStr.match(/(\d+)-?SERIES/)
-    if (modelSeriesMatch && modelSeriesMatch[1] === expectedSeries) {
-      score += 15  // Большой бонус за совпадение серии
-    }
-    // Или для X-моделей
-    if (expectedSeries.startsWith('X') && modelStr.includes(`BMW ${expectedSeries}`)) {
-      score += 15
-    }
-  }
+    console.log({
+      normalizedTitle,
+      engineCC,
+      year,
+      bestScore,
+      foundBrand: foundRow?.["B"],
+      foundModel: foundRow?.["C"],
+    })
 
-  if (score > bestScore) {
-    bestScore = score
-    bestRow = row
-  }
-}
-
-const foundRow =
-  bestScore >= 3
-    ? bestRow
-    : null
-
-console.log({
-  normalizedTitle,
-  bestScore,
-  foundModel: foundRow?.["C"],
-})
     if (!foundRow) {
       console.log("NOT FOUND:", title)
       return { price: 0 }
@@ -175,21 +212,13 @@ console.log({
 
     const excelYear = Number(foundRow["E"])
     const carYear = year
-
-    let originalUsd = Number(
-      String(foundRow["F"] || "0")
-        .replace(/\s/g, "")
-        .replace(",", "")
+    const originalUsd = Number(
+      String(foundRow["F"] || "0").replace(/\s/g, "").replace(",", "")
     )
-    
+
+    // За каждый год старше базового в таблице: × 0.85
     let usd = originalUsd
     let depreciationYears = 0
-    
-    console.log({
-      excelPrice: foundRow["F"],
-      usd,
-    })
-    
     let currentYear = excelYear
     while (currentYear > carYear) {
       usd *= 0.85
@@ -197,13 +226,17 @@ console.log({
       depreciationYears++
     }
 
-    return { 
-      price: Math.round(usd * 460),
+    const finalUsd = Math.round(usd * 100) / 100
+    const price = Math.round(finalUsd * CUSTOMS_USD_TO_KZT)
+
+    return {
+      price,
       excelYear,
       carYear,
       depreciationYears,
       originalUsd,
-      foundModel: foundRow["C"]
+      finalUsd,
+      foundModel: [foundRow["B"], foundRow["C"]].filter(Boolean).join(" "),
     }
   } catch (e) {
     console.error("[customs] Failed to read or parse xlsx:", e)
@@ -419,7 +452,10 @@ export async function POST(req: Request) {
                 (customs.depreciationYears || 0) > 0
                   ? `${(Math.pow(0.85, customs.depreciationYears || 0) * 100).toFixed(1)}%`
                   : "100%",
-              finalPriceUsd: Math.round(customs.price / 460),
+              finalPriceUsd:
+                customs.finalUsd ??
+                Math.round(customs.price / CUSTOMS_USD_TO_KZT),
+              rate: CUSTOMS_USD_TO_KZT,
             }
           : null,
       recycle: recycle.toLocaleString() + " ₸",

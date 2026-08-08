@@ -40,6 +40,7 @@ type CarResult = {
     depreciationYears?: number
     depreciationPercent?: string
     finalPriceUsd?: number
+    rate?: number
   } | null
   carPriceUsd: number
   carPriceKzt: number
@@ -485,6 +486,10 @@ export default function Home() {
                                 <div className="flex justify-between border-t border-zinc-600 pt-1 mt-1">
                                   <span>Итоговая цена USD:</span>
                                   <span className="text-white font-medium">${car.customsDetails.finalPriceUsd?.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Курс таможни:</span>
+                                  <span className="text-white">× {car.customsDetails.rate ?? 520}</span>
                                 </div>
                               </div>
                             </div>
