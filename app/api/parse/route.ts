@@ -40,9 +40,34 @@ function getCustomsPrice(
   try {
     const buf = fs.readFileSync(filePath)
     const workbook = XLSX.read(buf, { type: "buffer" })
-    const sheet = workbook.Sheets[workbook.SheetNames[0]]
-    const rawData: any[] = XLSX.utils.sheet_to_json(sheet, { header: "A" })
-    const data = rawData.slice(1)
+
+    // Листы легковых: основный + «с 2015г. и ранее»
+    const carSheetNames = workbook.SheetNames.filter((name) => {
+      const n = name.trim().toLowerCase()
+      return n === "авто" || n.includes("2015")
+    })
+    const sheetsToUse =
+      carSheetNames.length > 0
+        ? carSheetNames
+        : [workbook.SheetNames[0]]
+
+    const data: any[] = []
+    for (const sheetName of sheetsToUse) {
+      const sheet = workbook.Sheets[sheetName]
+      if (!sheet) continue
+      const rawData: any[] = XLSX.utils.sheet_to_json(sheet, { header: "A" })
+      data.push(...rawData.slice(1))
+    }
+
+    const parseRowYear = (value: unknown): number => {
+      if (typeof value === "number" && Number.isFinite(value)) return value
+      const text = String(value || "")
+      const digits = text.match(/20\d{2}|\d{4}/)
+      if (digits) return Number(digits[0])
+      // «с 2015 года и ранее»
+      if (/2015/i.test(text)) return 2015
+      return NaN
+    }
 
     const normalizedTitle = title
       .toUpperCase()
@@ -135,7 +160,7 @@ function getCustomsPrice(
         .replace(/[^A-Z0-9 ]/g, " ")
         .trim()
       const rowEngine = Number(row["D"])
-      const rowYear = Number(row["E"])
+      const rowYear = parseRowYear(row["E"])
 
       const brandWords =
         brand.match(/[A-Z0-9]+/g)?.filter((w) => w.length > 1) || []
@@ -168,11 +193,16 @@ function getCustomsPrice(
       }
 
       // Год
-      if (rowYear === year) {
-        score += 15
-      } else if (rowYear > year) {
-        // ближе к году авто — лучше (база для ×0.85)
-        score += Math.max(0, 8 - (rowYear - year))
+      if (Number.isFinite(rowYear)) {
+        if (rowYear === year) {
+          score += 15
+        } else if (rowYear > year) {
+          // ближе к году авто — лучше (база для ×0.85)
+          score += Math.max(0, 8 - (rowYear - year))
+        } else if (rowYear === 2015 && year <= 2015) {
+          // лист «с 2015 года и ранее»
+          score += 12
+        }
       }
 
       if (expectedSeries) {
@@ -210,7 +240,7 @@ function getCustomsPrice(
       return { price: 0 }
     }
 
-    const excelYear = Number(foundRow["E"])
+    const excelYear = parseRowYear(foundRow["E"])
     const carYear = year
     const originalUsd = Number(
       String(foundRow["F"] || "0").replace(/\s/g, "").replace(",", "")
@@ -220,7 +250,7 @@ function getCustomsPrice(
     let usd = originalUsd
     let depreciationYears = 0
     let currentYear = excelYear
-    while (currentYear > carYear) {
+    while (Number.isFinite(currentYear) && currentYear > carYear) {
       usd *= 0.85
       currentYear--
       depreciationYears++
