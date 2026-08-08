@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  CircleHelp,
   Clock3,
   Download,
   FileCheck2,
@@ -756,29 +755,6 @@ export default function Home() {
               </div>
             </CardContent>
           </Card>
-        </section>
-
-        <section className="mt-16">
-          <h2 className="mb-6 text-3xl font-semibold">FAQ</h2>
-          <div className="space-y-3">
-            {[
-              ["Расчет финальный?", "Это предварительная коммерческая оценка. Финальные цифры подтверждаются по VIN и документам."],
-              ["Как быстро обновляются ставки?", "Курсы и внутренние коэффициенты регулярно обновляются в сервисе."],
-              ["Можно ли считать несколько авто?", "Да, без ограничений по количеству расчетов."],
-            ].map(([q, a]) => (
-              <Card key={q}>
-                <CardContent className="p-0">
-                  <details className="group p-5">
-                    <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-                      <span className="flex items-center gap-2"><CircleHelp className="h-4 w-4 text-[#F5C542]" />{q}</span>
-                      <span className="text-zinc-500 group-open:rotate-45 transition-transform">+</span>
-                    </summary>
-                    <p className="pt-3 text-sm text-zinc-300">{a}</p>
-                  </details>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </section>
 
         <footer className="mt-16 border-t border-white/10 py-8 text-sm text-zinc-400">
