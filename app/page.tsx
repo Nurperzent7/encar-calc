@@ -208,21 +208,27 @@ export default function Home() {
     if (!element) return
 
     try {
-      const html2canvas = (await import("html2canvas")).default
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff"
-      })
-      
-      const link = document.createElement("a")
-      link.download = `${car.title.replace(/\s+/g, "_")}_specs.png`
-      link.href = canvas.toDataURL("image/png")
-      link.click()
+      const html2pdf = (await import("html2pdf.js")).default
+      const filename = `${car.title.replace(/\s+/g, "_")}_offer.pdf`
+      await html2pdf()
+        .set({
+          margin: [8, 8, 8, 8],
+          filename,
+          image: { type: "jpeg", quality: 0.95 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#ffffff",
+          },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["css", "legacy"] },
+        })
+        .from(element)
+        .save()
     } catch (err) {
-      console.error("Image generation failed:", err)
-      alert("Не удалось создать изображение. Попробуйте еще раз.")
+      console.error("PDF generation failed:", err)
+      alert("Не удалось создать PDF. Попробуйте еще раз.")
     }
   }
 
@@ -408,7 +414,7 @@ export default function Home() {
                     <div className="flex items-center gap-2">
                       <Button variant="subtle" onClick={downloadCarData}>
                         <Download className="mr-2 h-4 w-4" />
-                        Скачать PNG
+                        Скачать PDF
                       </Button>
                     </div>
                   </div>
