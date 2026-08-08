@@ -649,10 +649,10 @@ export default function Home() {
               {/* Сетка фото */}
               <div style={{ marginBottom: "20px" }}>
                 <h3 style={{ fontSize: "14px", fontWeight: "600", margin: "0 0 12px", color: "#666" }}>ФОТОГРАФИИ АВТОМОБИЛЯ:</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
-                  {images.slice(0, 6).map((img, i) => (
-                    <div key={i} style={{ height: "110px", overflow: "hidden", borderRadius: "6px" }}>
-                      <img src={`/api/image?url=${encodeURIComponent(img)}`} alt={`car-${i}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
+                  {images.map((img, i) => (
+                    <div key={img} style={{ height: "100px", overflow: "hidden", borderRadius: "6px" }}>
+                      <img src={`/api/image?url=${encodeURIComponent(img)}`} alt={`car-${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                   ))}
                 </div>
