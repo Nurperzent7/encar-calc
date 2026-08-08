@@ -9,8 +9,8 @@ import { getPrimaryRegFee, getUtilFee } from "@/lib/fees"
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
-/** Таможня ₸ = цена из таблицы ($) после износа × 520 */
-const CUSTOMS_USD_TO_KZT = 520
+/** Таможня ₸ = цена из таблицы ($) после износа × 468 */
+const CUSTOMS_USD_TO_KZT = 468
 
 function getCustomsPrice(
   title: string,

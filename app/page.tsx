@@ -541,7 +541,7 @@ export default function Home() {
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Курс таможни:</span>
-                                  <span className="text-white">× {car.customsDetails.rate ?? 520}</span>
+                                  <span className="text-white">× {car.customsDetails.rate ?? 468}</span>
                                 </div>
                               </div>
                             </div>
