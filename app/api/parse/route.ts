@@ -140,21 +140,71 @@ function getCustomsPrice(
       "LINE",
       "STYLE",
       "LUXURY",
+      "EXCLUSIVE",
+      "PREMIUM",
+      "LPG",
+      "HYBRID",
+      "THE",
+      "NEW",
     ]
+
+    // Если в заголовке только модель без марки — подставляем бренд из таблицы
+    const modelToBrand: Record<string, string> = {
+      GRANDEUR: "HYUNDAI",
+      AZERA: "HYUNDAI",
+      SONATA: "HYUNDAI",
+      TUCSON: "HYUNDAI",
+      SANTAFE: "HYUNDAI",
+      PALISADE: "HYUNDAI",
+      KONA: "HYUNDAI",
+      AVANTE: "HYUNDAI",
+      ELANTRA: "HYUNDAI",
+      STARIA: "HYUNDAI",
+      CARNIVAL: "KIA",
+      SORENTO: "KIA",
+      SPORTAGE: "KIA",
+      K5: "KIA",
+      K8: "KIA",
+      K9: "KIA",
+      QM6: "RENAULT",
+      SM6: "RENAULT",
+      XM3: "RENAULT",
+    }
 
     const titleWords =
       normalizedTitle
         .match(/[A-Z0-9]+/g)
         ?.filter((w) => !commonWords.includes(w) && w.length > 1) || []
 
-    const titleHas = (word: string) =>
-      titleWords.some(
-        (t) =>
-          t === word ||
-          (word.length >= 3 && (t.includes(word) || word.includes(t)))
-      )
+    for (const [modelName, brandName] of Object.entries(modelToBrand)) {
+      if (titleWords.includes(modelName) && !titleWords.includes(brandName)) {
+        titleWords.push(brandName)
+      }
+    }
 
-    type ScoredRow = { row: any; score: number; brandHit: boolean; modelHits: number; volumeExact: boolean }
+    // HG300 / 530i / 2000 и т.п. — точное совпадение токена; длинные имена — мягче
+    const titleHas = (word: string) => {
+      const w = word.toUpperCase()
+      if (/^\d+$/.test(w) || w.length <= 2) {
+        return titleWords.some((t) => t === w)
+      }
+      if (w.length <= 3) {
+        return titleWords.some((t) => t === w)
+      }
+      return titleWords.some(
+        (t) => t === w || t.includes(w) || (w.length >= 5 && w.includes(t) && t.length >= 4)
+      )
+    }
+
+    type ScoredRow = {
+      row: any
+      score: number
+      brandHit: boolean
+      modelHits: number
+      modelCoverage: number
+      volumeExact: boolean
+      volumeDiff: number
+    }
     const scored: ScoredRow[] = []
 
     // Ищем строку: бренд + название + объём + год
@@ -177,35 +227,45 @@ function getCustomsPrice(
           .match(/[A-Z0-9]+/g)
           ?.filter((w) => !commonWords.includes(w) && w.length > 1) || []
 
-      if (modelWords.length === 0) continue
+      if (modelWords.length === 0 || !Number.isFinite(rowEngine)) continue
 
       const brandHit = brandWords.some((w) => titleHas(w))
-      const modelHits = modelWords.filter((w) => titleHas(w)).length
-      const modelCoverage = modelHits / modelWords.length
+      // Числовые куски модели (300, 530) не считаем совпадением модели сами по себе,
+      // если в заголовке нет такого же отдельного токена.
+      const meaningfulModelWords = modelWords.filter((w) => !/^\d+$/.test(w) || titleWords.includes(w))
+      const modelHits = meaningfulModelWords.filter((w) => titleHas(w)).length
+      const modelCoverage =
+        meaningfulModelWords.length > 0
+          ? modelHits / meaningfulModelWords.length
+          : 0
       const volumeExact = rowEngine === engineCC
-      const volumeClose = Math.abs(rowEngine - engineCC) <= 100
+      const volumeDiff = Math.abs(rowEngine - engineCC)
+      const volumeClose = volumeDiff <= 200
 
-      // Обязательно: совпадение модели + объём (точный или близкий)
-      if (modelHits === 0 || (!volumeExact && !volumeClose)) continue
+      // Нужно совпадение текстовой модели (не только цифр вроде 300)
+      const hasTextModel = meaningfulModelWords.some(
+        (w) => !/^\d+$/.test(w) && titleHas(w)
+      )
+      if (!hasTextModel) continue
+      if (!volumeExact && !volumeClose && !(brandHit && modelCoverage >= 0.5)) continue
 
       let score = 0
 
-      // Бренд (важно)
-      if (brandHit) score += 40
-      else score -= 5
+      if (brandHit) score += 50
+      else score -= 20
 
-      // Модель: покрытие слов названия
-      score += Math.round(modelCoverage * 40)
-      // длинные токены модели весомее (QM6, SANTAFE, GLE и т.п.)
-      for (const word of modelWords) {
-        if (titleHas(word)) score += Math.min(12, word.length)
+      score += Math.round(modelCoverage * 50)
+      for (const word of meaningfulModelWords) {
+        if (!titleHas(word)) continue
+        // длинные имена модели (GRANDEUR) важнее коротких кодов
+        score += Math.min(25, word.length * 2)
       }
 
-      // Объём
-      if (volumeExact) score += 35
-      else if (volumeClose) score += 8
+      if (volumeExact) score += 40
+      else if (volumeDiff <= 100) score += 15
+      else if (volumeDiff <= 200) score += 5
+      else score -= Math.min(30, Math.floor(volumeDiff / 100))
 
-      // Год
       if (Number.isFinite(rowYear)) {
         if (rowYear === year) {
           score += 25
@@ -214,7 +274,6 @@ function getCustomsPrice(
         } else if (rowYear === 2015 && year <= 2015) {
           score += 18
         } else {
-          // год в таблице младше авто — слабый кандидат
           score -= Math.min(15, year - rowYear)
         }
       }
@@ -229,19 +288,27 @@ function getCustomsPrice(
         }
       }
 
-      scored.push({ row, score, brandHit, modelHits, volumeExact })
+      scored.push({
+        row,
+        score,
+        brandHit,
+        modelHits,
+        modelCoverage,
+        volumeExact,
+        volumeDiff,
+      })
     }
 
-    // Сначала точный объём + модель; при наличии бренда в заголовке — предпочитаем его
     scored.sort((a, b) => {
-      if (a.volumeExact !== b.volumeExact) return a.volumeExact ? -1 : 1
       if (a.brandHit !== b.brandHit) return a.brandHit ? -1 : 1
-      if (a.modelHits !== b.modelHits) return b.modelHits - a.modelHits
+      if (a.modelCoverage !== b.modelCoverage) return b.modelCoverage - a.modelCoverage
+      if (a.volumeExact !== b.volumeExact) return a.volumeExact ? -1 : 1
+      if (a.volumeDiff !== b.volumeDiff) return a.volumeDiff - b.volumeDiff
       return b.score - a.score
     })
 
     const best = scored[0]
-    const foundRow = best && best.score >= 20 ? best.row : null
+    const foundRow = best && best.score >= 30 ? best.row : null
     const bestScore = best?.score ?? 0
 
     console.log({
@@ -321,6 +388,16 @@ export async function POST(req: Request) {
     let krw = 0
     let finalImages: string[] = []
     let source: "encar" | "heydealer" = "encar"
+
+    const inferEngineFromTitle = (raw: string, fallback: number) => {
+      const t = raw.toUpperCase()
+      // Korean codes: HG300 / IG300 → 3.0 л
+      const code = t.match(/\b(?:HG|IG|TG|SG|QG)([1-6])00\b/)
+      if (code) return Number(code[1])
+      const liters = t.match(/\b([1-6](?:\.\d)?)\s*L\b/)
+      if (liters) return Number(liters[1])
+      return fallback
+    }
 
     if (isHeyDealerUrl(url)) {
       const heydealer = await parseHeyDealerUrl(url)
@@ -426,7 +503,7 @@ export async function POST(req: Request) {
     }
 
     const carPriceKzt = Math.round(krw * 0.36)
-    const engine = selectedEngine
+    const engine = inferEngineFromTitle(title, selectedEngine)
 
     const logistics =
       1150000
