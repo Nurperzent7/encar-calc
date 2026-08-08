@@ -5,6 +5,7 @@ import * as XLSX from "xlsx"
 import fs from "fs"
 import path from "path"
 import { isHeyDealerUrl, parseHeyDealerUrl } from "@/lib/heydealer"
+import { getPrimaryRegFee, getUtilFee } from "@/lib/fees"
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
@@ -146,8 +147,15 @@ function getCustomsPrice(
         .match(/[A-Z0-9]+/g)
         ?.filter((w) => !commonWords.includes(w) && w.length > 1) || []
 
-    let bestRow: any = null
-    let bestScore = 0
+    const titleHas = (word: string) =>
+      titleWords.some(
+        (t) =>
+          t === word ||
+          (word.length >= 3 && (t.includes(word) || word.includes(t)))
+      )
+
+    type ScoredRow = { row: any; score: number; brandHit: boolean; modelHits: number; volumeExact: boolean }
+    const scored: ScoredRow[] = []
 
     // Ищем строку: бренд + название + объём + год
     for (const row of data) {
@@ -169,70 +177,83 @@ function getCustomsPrice(
           .match(/[A-Z0-9]+/g)
           ?.filter((w) => !commonWords.includes(w) && w.length > 1) || []
 
+      if (modelWords.length === 0) continue
+
+      const brandHit = brandWords.some((w) => titleHas(w))
+      const modelHits = modelWords.filter((w) => titleHas(w)).length
+      const modelCoverage = modelHits / modelWords.length
+      const volumeExact = rowEngine === engineCC
+      const volumeClose = Math.abs(rowEngine - engineCC) <= 100
+
+      // Обязательно: совпадение модели + объём (точный или близкий)
+      if (modelHits === 0 || (!volumeExact && !volumeClose)) continue
+
       let score = 0
 
-      // Бренд
-      for (const word of brandWords) {
-        if (titleWords.some((t) => t === word || t.includes(word) || word.includes(t))) {
-          score += 12
-        }
-      }
+      // Бренд (важно)
+      if (brandHit) score += 40
+      else score -= 5
 
-      // Название / модель
+      // Модель: покрытие слов названия
+      score += Math.round(modelCoverage * 40)
+      // длинные токены модели весомее (QM6, SANTAFE, GLE и т.п.)
       for (const word of modelWords) {
-        if (titleWords.some((t) => t.includes(word) || word.includes(t))) {
-          score += 3
-        }
+        if (titleHas(word)) score += Math.min(12, word.length)
       }
 
       // Объём
-      if (rowEngine === engineCC) {
-        score += 20
-      } else if (Math.abs(rowEngine - engineCC) <= 100) {
-        score += 5
-      }
+      if (volumeExact) score += 35
+      else if (volumeClose) score += 8
 
       // Год
       if (Number.isFinite(rowYear)) {
         if (rowYear === year) {
-          score += 15
+          score += 25
         } else if (rowYear > year) {
-          // ближе к году авто — лучше (база для ×0.85)
-          score += Math.max(0, 8 - (rowYear - year))
+          score += Math.max(0, 12 - (rowYear - year))
         } else if (rowYear === 2015 && year <= 2015) {
-          // лист «с 2015 года и ранее»
-          score += 12
+          score += 18
+        } else {
+          // год в таблице младше авто — слабый кандидат
+          score -= Math.min(15, year - rowYear)
         }
       }
 
       if (expectedSeries) {
         const modelSeriesMatch = model.match(/(\d+)-?SERIES/)
         if (modelSeriesMatch && modelSeriesMatch[1] === expectedSeries) {
-          score += 15
+          score += 20
         }
-        if (
-          expectedSeries.startsWith("X") &&
-          (model.includes(expectedSeries) || brand.includes("BMW"))
-        ) {
-          if (model.includes(expectedSeries)) score += 15
+        if (expectedSeries.startsWith("X") && model.includes(expectedSeries)) {
+          score += 20
         }
       }
 
-      if (score > bestScore) {
-        bestScore = score
-        bestRow = row
-      }
+      scored.push({ row, score, brandHit, modelHits, volumeExact })
     }
 
-    const foundRow = bestScore >= 3 ? bestRow : null
+    // Сначала точный объём + модель; при наличии бренда в заголовке — предпочитаем его
+    scored.sort((a, b) => {
+      if (a.volumeExact !== b.volumeExact) return a.volumeExact ? -1 : 1
+      if (a.brandHit !== b.brandHit) return a.brandHit ? -1 : 1
+      if (a.modelHits !== b.modelHits) return b.modelHits - a.modelHits
+      return b.score - a.score
+    })
+
+    const best = scored[0]
+    const foundRow = best && best.score >= 20 ? best.row : null
+    const bestScore = best?.score ?? 0
 
     console.log({
       normalizedTitle,
       engineCC,
       year,
       bestScore,
+      brandHit: best?.brandHit,
+      modelHits: best?.modelHits,
       foundBrand: foundRow?.["B"],
       foundModel: foundRow?.["C"],
+      candidates: scored.length,
     })
 
     if (!foundRow) {
@@ -410,26 +431,8 @@ export async function POST(req: Request) {
     const logistics =
       1150000
 
-    let recycle = 324000
-
-    if (engine > 1 && engine <= 2)
-      recycle = 757000
-
-    if (engine > 2 && engine <= 3)
-      recycle = 1080000
-
-    if (engine > 3)
-      recycle = 2490000
-
-    const currentYear = 2026
-
-    const age =
-      currentYear - year
-
-    const primary =
-      age <= 2
-        ? 1081
-        : 2162500
+    const recycle = getUtilFee(engine)
+    const primary = getPrimaryRegFee(year)
 
     let excise = 0
 

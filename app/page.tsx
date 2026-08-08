@@ -24,6 +24,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getPrimaryRegFee, getUtilFee } from "@/lib/fees"
 
 type CarResult = {
   title: string
@@ -136,10 +137,12 @@ export default function Home() {
       const svhExpenses = 550000
       const engineVolume = Number(engine)
       const util =
-        engineVolume <= 1 ? 324000 : engineVolume <= 2 ? 757000 : engineVolume <= 3 ? 1080000 : 2490000
-
-      const age = new Date().getFullYear() - Number(data.year || new Date().getFullYear())
-      const firstReg = age <= 2 ? 1081 : 2162500
+        Number(String(data.recycle || "").replace(/[^\d]/g, "")) ||
+        getUtilFee(engineVolume)
+      const carYear = Number(data.year) || new Date().getFullYear()
+      const firstReg =
+        Number(String(data.primary || "").replace(/[^\d]/g, "")) ||
+        getPrimaryRegFee(carYear)
       const excise = engineVolume >= 3 ? engineVolume * 100000 : 0
       const broker = 500000
       // Используем введённую таможню или дефолт из API
