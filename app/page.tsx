@@ -221,7 +221,7 @@ export default function Home() {
             allowTaint: true,
             backgroundColor: "#ffffff",
           },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          jsPDF: { unit: "mm", format: "a3", orientation: "portrait" },
         })
         .from(element)
         .save()
@@ -560,7 +560,7 @@ export default function Home() {
 
           {/* Элемент для PDF генерации */}
           {car && (
-            <div id="car-pdf-content" className="pdf-content" style={{ width: "210mm", minHeight: "297mm", background: "#fff", color: "#1a1a1a", padding: "20px", fontFamily: "Arial, sans-serif", margin: "20px auto", boxShadow: "0 4px 30px rgba(0,0,0,0.4)", position: "relative", zIndex: 1 }}>
+            <div id="car-pdf-content" className="pdf-content" style={{ width: "297mm", minHeight: "420mm", background: "#fff", color: "#1a1a1a", padding: "20px", fontFamily: "Arial, sans-serif", margin: "20px auto", boxShadow: "0 4px 30px rgba(0,0,0,0.4)", position: "relative", zIndex: 1 }}>
               {/* Шапка */}
               <div style={{ textAlign: "center", marginBottom: "20px", paddingBottom: "15px", borderBottom: "3px solid #F5C542" }}>
                 <h1 style={{ fontSize: "22px", fontWeight: "700", margin: "0", color: "#1a1a1a" }}>ПРЕДЛОЖЕНИЕ ДЛЯ КЛИЕНТА</h1>
