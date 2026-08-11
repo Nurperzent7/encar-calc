@@ -56,6 +56,20 @@ type CarResult = {
   svhExpenses: number
   total: number
   selectedEngine: string
+  insuranceRecords?: Array<{
+    date: string
+    type: string
+    amount: number
+    description: string
+  }>
+  insuranceSummary?: {
+    myAccidentCnt?: number
+    otherAccidentCnt?: number
+    ownerChangeCnt?: number
+    myAccidentCost?: number
+    otherAccidentCost?: number
+    vehicleNo?: string
+  } | null
 }
 
 const fadeUp = {
@@ -193,6 +207,8 @@ export default function Home() {
         svhExpenses,
         total,
         selectedEngine: `${engine} л`,
+        insuranceRecords: Array.isArray(data.insuranceRecords) ? data.insuranceRecords : [],
+        insuranceSummary: data.insuranceSummary || null,
       })
       setActiveImage(0)
     } catch (e) {
@@ -583,6 +599,56 @@ export default function Home() {
                   >
                     Написать в Telegram
                   </Button>
+
+                  {/* Страховая история Encar */}
+                  <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-4">
+                    <h3 className="mb-3 text-lg font-semibold text-[#F5C542]">Страховая история</h3>
+                    {car.insuranceSummary?.vehicleNo && (
+                      <p className="mb-3 text-xs text-zinc-500">Номер авто: {car.insuranceSummary.vehicleNo}</p>
+                    )}
+                    <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
+                        <p className="text-xl font-bold text-white">{car.insuranceRecords?.length ?? 0}</p>
+                        <p className="mt-1 text-[11px] text-zinc-500">Случаев</p>
+                      </div>
+                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
+                        <p className="text-xl font-bold text-white">{car.insuranceSummary?.myAccidentCnt ?? 0}</p>
+                        <p className="mt-1 text-[11px] text-zinc-500">Своё ДТП</p>
+                      </div>
+                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
+                        <p className="text-xl font-bold text-white">{car.insuranceSummary?.otherAccidentCnt ?? 0}</p>
+                        <p className="mt-1 text-[11px] text-zinc-500">Чужое ДТП</p>
+                      </div>
+                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
+                        <p className="text-xl font-bold text-white">{car.insuranceSummary?.ownerChangeCnt ?? 0}</p>
+                        <p className="mt-1 text-[11px] text-zinc-500">Смен владельца</p>
+                      </div>
+                    </div>
+                    {(car.insuranceRecords?.length ?? 0) > 0 ? (
+                      <div className="space-y-2">
+                        {car.insuranceRecords!.map((rec, i) => (
+                          <div key={`${rec.date}-${rec.type}-${i}`} className="rounded-xl border border-white/5 bg-zinc-900/60 px-4 py-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-sm font-medium text-white">{rec.type}</span>
+                              {rec.date ? <span className="text-xs text-zinc-500">{rec.date}</span> : null}
+                            </div>
+                            {rec.amount > 0 && (
+                              <p className="mt-1 text-xs font-semibold text-[#F5C542]">
+                                Выплата: {new Intl.NumberFormat("ru-RU").format(rec.amount)} ₩
+                              </p>
+                            )}
+                            {rec.description ? (
+                              <p className="mt-1 text-xs text-zinc-400">{rec.description}</p>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-zinc-500">
+                        Страховые случаи не найдены или история закрыта на Encar.
+                      </p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>

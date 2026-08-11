@@ -6,6 +6,12 @@ import fs from "fs"
 import path from "path"
 import { isHeyDealerUrl, parseHeyDealerUrl } from "@/lib/heydealer"
 import { getPrimaryRegFee, getUtilFee } from "@/lib/fees"
+import {
+  extractEncarVehicleId,
+  fetchEncarInsuranceHistory,
+  type InsuranceRecordItem,
+  type InsuranceSummary,
+} from "@/lib/encar-insurance"
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
@@ -528,6 +534,19 @@ export async function POST(req: Request) {
         .slice(0, 20)
     }
 
+    let insuranceRecords: InsuranceRecordItem[] = []
+    let insuranceSummary: InsuranceSummary = {}
+    const encarVehicleId = extractEncarVehicleId(String(url))
+    if (encarVehicleId && source === "encar") {
+      try {
+        const hist = await fetchEncarInsuranceHistory(encarVehicleId)
+        insuranceRecords = hist.insuranceRecords
+        insuranceSummary = hist.insuranceSummary
+      } catch (e) {
+        console.warn("[encar-insurance]", e)
+      }
+    }
+
     const carPriceKzt = Math.round(krw * 0.36)
     const engine = inferEngineFromTitle(title, selectedEngine)
 
@@ -600,6 +619,8 @@ export async function POST(req: Request) {
       broker: broker.toLocaleString() + " ₸",
       finalTotal: total.toLocaleString() + " ₸",
       images: finalImages,
+      insuranceRecords,
+      insuranceSummary,
     })
   } catch (error) {
     console.log(error)
