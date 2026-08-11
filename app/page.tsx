@@ -225,10 +225,37 @@ export default function Home() {
     if (!car) return
     const element = document.getElementById("car-pdf-content")
     if (!element) return
+    const wrap = element.parentElement
 
     try {
       const html2canvas = (await import("html2canvas")).default
       const { jsPDF } = await import("jspdf")
+
+      // На мобилке превью скрыто — временно показываем для снимка
+      const prevWrap = wrap
+        ? {
+            className: wrap.className,
+            position: wrap.style.position,
+            left: wrap.style.left,
+            top: wrap.style.top,
+            width: wrap.style.width,
+            height: wrap.style.height,
+            overflow: wrap.style.overflow,
+            opacity: wrap.style.opacity,
+            zIndex: wrap.style.zIndex,
+          }
+        : null
+      if (wrap) {
+        wrap.className = ""
+        wrap.style.position = "fixed"
+        wrap.style.left = "0"
+        wrap.style.top = "0"
+        wrap.style.width = "794px"
+        wrap.style.height = "1123px"
+        wrap.style.overflow = "visible"
+        wrap.style.opacity = "1"
+        wrap.style.zIndex = "-1"
+      }
 
       // Фиксируем A4 перед снимком, чтобы пропорции совпали со страницей
       const prev = {
@@ -259,6 +286,17 @@ export default function Home() {
       element.style.height = prev.height
       element.style.maxWidth = prev.maxWidth
       element.style.margin = prev.margin
+      if (wrap && prevWrap) {
+        wrap.className = prevWrap.className
+        wrap.style.position = prevWrap.position
+        wrap.style.left = prevWrap.left
+        wrap.style.top = prevWrap.top
+        wrap.style.width = prevWrap.width
+        wrap.style.height = prevWrap.height
+        wrap.style.overflow = prevWrap.overflow
+        wrap.style.opacity = prevWrap.opacity
+        wrap.style.zIndex = prevWrap.zIndex
+      }
 
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
       const pageW = pdf.internal.pageSize.getWidth()
@@ -285,38 +323,38 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#0A0A0A] text-white">
       <div className="pointer-events-none absolute left-1/2 top-[-120px] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#F5C542]/10 blur-[120px]" />
-      <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 md:px-8 lg:px-12">
-        <header className="mb-6 flex items-center gap-3">
+      <div className="mx-auto w-full max-w-7xl px-3 pb-20 pt-4 sm:px-4 md:px-8 md:pb-16 md:pt-6 lg:px-12">
+        <header className="mb-4 flex items-center gap-3 md:mb-6">
           <img
             src="/logo.jpg"
             alt="avtodom969"
-            className="h-10 w-10 rounded-full object-cover ring-1 ring-[#F5C542]/40"
+            className="h-9 w-9 rounded-full object-cover ring-1 ring-[#F5C542]/40 md:h-10 md:w-10"
           />
-          <span className="text-lg font-semibold tracking-wide text-[#F5C542] md:text-xl">
+          <span className="text-base font-semibold tracking-wide text-[#F5C542] md:text-xl">
             avtodom969
           </span>
         </header>
-        <motion.section initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.6 }} className="grid items-center gap-10 py-10 md:grid-cols-2 md:py-16">
-          <div className="space-y-6">
-            <h1 className="text-balance text-5xl font-bold leading-tight md:text-7xl text-[#F5C542]">
+        <motion.section initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.6 }} className="grid items-center gap-6 py-6 md:grid-cols-2 md:gap-10 md:py-16">
+          <div className="space-y-4 md:space-y-6">
+            <h1 className="text-balance text-4xl font-bold leading-tight text-[#F5C542] sm:text-5xl md:text-7xl">
               AVTODOM969
             </h1>
-            <h2 className="text-balance text-2xl font-semibold leading-tight md:text-3xl text-zinc-200">
+            <h2 className="text-balance text-xl font-semibold leading-tight text-zinc-200 sm:text-2xl md:text-3xl">
               Импорт авто из Кореи в Казахстан
             </h2>
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" onClick={() => document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" })}>
+              <Button size="lg" className="w-full sm:w-auto" onClick={() => document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" })}>
                 Рассчитать стоимость <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Button variant="ghost" onClick={() => window.open("https://wa.me/77076961969", "_blank")} className="border border-green-500/50 text-green-400 hover:bg-green-500/10">
+            <div className="grid grid-cols-3 gap-2 pt-1 sm:flex sm:flex-wrap sm:gap-3 sm:pt-2">
+              <Button variant="ghost" onClick={() => window.open("https://wa.me/77076961969", "_blank")} className="border border-green-500/50 px-2 text-xs text-green-400 hover:bg-green-500/10 sm:px-5 sm:text-sm">
                 WhatsApp
               </Button>
-              <Button variant="ghost" onClick={() => window.open("https://www.instagram.com/avtodom969/", "_blank")} className="border border-pink-500/50 text-pink-400 hover:bg-pink-500/10">
+              <Button variant="ghost" onClick={() => window.open("https://www.instagram.com/avtodom969/", "_blank")} className="border border-pink-500/50 px-2 text-xs text-pink-400 hover:bg-pink-500/10 sm:px-5 sm:text-sm">
                 Instagram
               </Button>
-              <Button variant="ghost" onClick={() => window.open("https://t.me/avtodom969", "_blank")} className="border border-blue-500/50 text-blue-400 hover:bg-blue-500/10">
+              <Button variant="ghost" onClick={() => window.open("https://t.me/avtodom969", "_blank")} className="border border-blue-500/50 px-2 text-xs text-blue-400 hover:bg-blue-500/10 sm:px-5 sm:text-sm">
                 Telegram
               </Button>
             </div>
@@ -325,7 +363,7 @@ export default function Home() {
             <img
               src="/logo.jpg"
               alt="AVTODOM969"
-              className="h-[340px] w-full object-contain md:h-[430px]"
+              className="h-[220px] w-full object-contain sm:h-[340px] md:h-[430px]"
             />
           </Card>
         </motion.section>
@@ -333,10 +371,10 @@ export default function Home() {
         <section id="calculator" className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
             <Card>
-              <CardContent className="space-y-4 p-6 md:p-8">
-                <div className="mb-2 flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold md:text-3xl">Калькулятор стоимости</h2>
-                  <Badge className="bg-[#F5C542]/10 text-[#F5C542]">Live Estimate</Badge>
+              <CardContent className="space-y-4 p-4 sm:p-6 md:p-8">
+                <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h2 className="text-xl font-semibold sm:text-2xl md:text-3xl">Калькулятор стоимости</h2>
+                  <Badge className="w-fit bg-[#F5C542]/10 text-[#F5C542]">Live Estimate</Badge>
                 </div>
                 <Input
                   value={url}
@@ -360,6 +398,7 @@ export default function Home() {
                     <label className="text-xs text-zinc-400">Курс USD → KZT</label>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       value={usdKztRate}
                       onChange={(e) => setUsdKztRate(Number(e.target.value))}
                       placeholder="500"
@@ -369,6 +408,7 @@ export default function Home() {
                     <label className="text-xs text-zinc-400">Курс KRW → USD</label>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       value={krwUsdRate}
                       onChange={(e) => setKrwUsdRate(Number(e.target.value))}
                       placeholder="1450"
@@ -381,6 +421,7 @@ export default function Home() {
                     <label className="text-xs text-zinc-400">Доставка (USD)</label>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       value={deliveryUsd}
                       onChange={(e) => setDeliveryUsd(Number(e.target.value))}
                       placeholder="2500"
@@ -390,6 +431,7 @@ export default function Home() {
                     <label className="text-xs text-zinc-400">Таможня (₸)</label>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       value={customsKzt}
                       onChange={(e) => setCustomsKzt(Number(e.target.value))}
                       placeholder="0"
@@ -406,8 +448,8 @@ export default function Home() {
           </motion.div>
 
           <motion.aside initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
-            <Card className="sticky top-6">
-              <CardContent className="space-y-4 p-6">
+            <Card className="lg:sticky lg:top-6">
+              <CardContent className="space-y-4 p-4 sm:p-6">
                 <p className="text-sm uppercase tracking-wide text-zinc-400">Стоимость под ключ</p>
                 <div className="space-y-3 text-sm text-zinc-300">
                   {car ? (
@@ -456,11 +498,11 @@ export default function Home() {
           {car && (
             <motion.div id="car-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <Card>
-                <CardContent className="space-y-6 p-6 md:p-8">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h3 className="text-2xl font-semibold md:text-3xl">{car.title}</h3>
-                    <div className="flex items-center gap-2">
-                      <Button variant="subtle" onClick={downloadCarData}>
+                <CardContent className="space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                    <h3 className="text-xl font-semibold leading-snug sm:text-2xl md:text-3xl">{car.title}</h3>
+                    <div className="flex w-full items-center gap-2 sm:w-auto">
+                      <Button variant="subtle" className="w-full sm:w-auto" onClick={downloadCarData}>
                         <Download className="mr-2 h-4 w-4" />
                         Скачать PDF
                       </Button>
@@ -468,22 +510,22 @@ export default function Home() {
                   </div>
 
                   {/* Две колонки: фото + инфо */}
-                  <div className="grid gap-6 lg:grid-cols-2">
+                  <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
                     {/* Левая колонка - фото */}
                     <div className="space-y-3">
-                      <img src={images[activeImage]} alt="Car preview" className="h-72 w-full rounded-2xl object-cover md:h-[320px]" />
-                      <div className="flex items-center gap-2">
-                        <Button variant="subtle" onClick={() => setActiveImage((prev) => Math.max(0, prev - 1))}>
+                      <img src={images[activeImage]} alt="Car preview" className="h-52 w-full rounded-2xl object-cover sm:h-72 md:h-[320px]" />
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <Button variant="subtle" className="shrink-0 px-3" onClick={() => setActiveImage((prev) => Math.max(0, prev - 1))}>
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <div className="flex w-full gap-2 overflow-x-auto">
+                        <div className="flex w-full gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                           {images.slice(0, 20).map((img, i) => (
-                            <button key={img} onClick={() => setActiveImage(i)} className={`h-14 w-20 shrink-0 overflow-hidden rounded-xl border ${i === activeImage ? "border-[#F5C542]" : "border-white/10"}`}>
+                            <button key={img} onClick={() => setActiveImage(i)} className={`h-12 w-16 shrink-0 overflow-hidden rounded-xl border sm:h-14 sm:w-20 ${i === activeImage ? "border-[#F5C542]" : "border-white/10"}`}>
                               <img src={img} alt={`car-${i + 1}`} className="h-full w-full object-cover" />
                             </button>
                           ))}
                         </div>
-                        <Button variant="subtle" onClick={() => setActiveImage((prev) => Math.min(images.length - 1, prev + 1))}>
+                        <Button variant="subtle" className="shrink-0 px-3" onClick={() => setActiveImage((prev) => Math.min(images.length - 1, prev + 1))}>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
@@ -493,103 +535,103 @@ export default function Home() {
                     <div className="space-y-3">
                       {/* Данные в USD */}
                       <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-3">
-                        <p className="text-xs text-zinc-500 mb-2">Стоимость в Корее:</p>
+                        <p className="mb-2 text-xs text-zinc-500">Стоимость в Корее:</p>
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-zinc-300">Фактическая стоимость:</span>
-                            <span className="font-medium text-white">${new Intl.NumberFormat("en-US").format(car.carPriceUsd)}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs text-zinc-300 sm:text-sm">Фактическая стоимость:</span>
+                            <span className="shrink-0 text-right font-medium text-white">${new Intl.NumberFormat("en-US").format(car.carPriceUsd)}</span>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-zinc-300">Логистика:</span>
-                            <span className="font-medium text-white">${new Intl.NumberFormat("en-US").format(car.logisticsUsd)}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs text-zinc-300 sm:text-sm">Логистика:</span>
+                            <span className="shrink-0 text-right font-medium text-white">${new Intl.NumberFormat("en-US").format(car.logisticsUsd)}</span>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-zinc-300">Услуга:</span>
-                            <span className="font-medium text-white">${car.serviceFeeUsd}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs text-zinc-300 sm:text-sm">Услуга:</span>
+                            <span className="shrink-0 text-right font-medium text-white">${car.serviceFeeUsd}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Разделитель */}
-                      <div className="py-2 text-center">
-                        <p className="text-xs text-zinc-500">— расходы оформление по прибытию авто —</p>
+                      <div className="py-1 text-center sm:py-2">
+                        <p className="text-[11px] leading-snug text-zinc-500 sm:text-xs">— расходы оформление по прибытию авто —</p>
                       </div>
 
                       {/* Данные в KZT */}
                       <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-3">
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-zinc-300">Растаможка (пошлина+НДС):</span>
-                            <span className="font-medium text-white">{formatKzt(Number(car.customs || 0))}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs text-zinc-300 sm:text-sm">Растаможка (пошлина+НДС):</span>
+                            <span className="shrink-0 text-right font-medium text-white">{formatKzt(Number(car.customs || 0))}</span>
                           </div>
                           {car.customsDetails && car.customsDetails.finalPriceUsd && car.customsDetails.finalPriceUsd > 0 && (
-                            <div className="rounded-lg bg-zinc-800/50 p-2 mt-1">
-                              <p className="text-xs text-zinc-400 mb-1">Расчет таможни:</p>
-                              <div className="space-y-1 text-xs text-zinc-300">
-                                <div className="flex justify-between">
-                                  <span>Найдена модель:</span>
-                                  <span className="text-white">{car.customsDetails.foundModel}</span>
+                            <div className="mt-1 rounded-lg bg-zinc-800/50 p-2">
+                              <p className="mb-1 text-xs text-zinc-400">Расчет таможни:</p>
+                              <div className="space-y-1 text-[11px] text-zinc-300 sm:text-xs">
+                                <div className="flex justify-between gap-2">
+                                  <span className="shrink-0">Найдена модель:</span>
+                                  <span className="truncate text-right text-white">{car.customsDetails.foundModel}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-2">
                                   <span>Год в таблице:</span>
                                   <span className="text-white">{car.customsDetails.excelYear}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-2">
                                   <span>Год вашего авто:</span>
                                   <span className="text-white">{car.customsDetails.carYear}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-2">
                                   <span>Цена в таблице:</span>
                                   <span className="text-white">${car.customsDetails.originalPrice?.toLocaleString()}</span>
                                 </div>
                                 {(car.customsDetails.depreciationYears ?? 0) > 0 && (
                                   <>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-2">
                                       <span>Лет разницы:</span>
                                       <span className="text-white">{car.customsDetails.depreciationYears}</span>
                                     </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-2">
                                       <span>Учтено стоимости:</span>
                                       <span className="text-[#F5C542]">{car.customsDetails.depreciationPercent}</span>
                                     </div>
                                   </>
                                 )}
-                                <div className="flex justify-between border-t border-zinc-600 pt-1 mt-1">
+                                <div className="mt-1 flex justify-between gap-2 border-t border-zinc-600 pt-1">
                                   <span>Итоговая цена USD:</span>
-                                  <span className="text-white font-medium">${car.customsDetails.finalPriceUsd?.toLocaleString()}</span>
+                                  <span className="font-medium text-white">${car.customsDetails.finalPriceUsd?.toLocaleString()}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-2">
                                   <span>Курс таможни:</span>
                                   <span className="text-white">× {car.customsDetails.rate ?? 468}</span>
                                 </div>
                               </div>
                             </div>
                           )}
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-zinc-300">Утильсбор:</span>
-                            <span className="font-medium text-white">{formatKzt(car.util)}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs text-zinc-300 sm:text-sm">Утильсбор:</span>
+                            <span className="shrink-0 text-right font-medium text-white">{formatKzt(car.util)}</span>
                           </div>
                           {car.excise > 0 && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-zinc-300">Акциз (двигатель ≥3.0L):</span>
-                              <span className="font-medium text-white">{formatKzt(car.excise)}</span>
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="text-xs text-zinc-300 sm:text-sm">Акциз (двигатель ≥3.0L):</span>
+                              <span className="shrink-0 text-right font-medium text-white">{formatKzt(car.excise)}</span>
                             </div>
                           )}
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-zinc-300">Первичная регистрация:</span>
-                            <span className="font-medium text-white">{formatKzt(car.firstReg)}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs text-zinc-300 sm:text-sm">Первичная регистрация:</span>
+                            <span className="shrink-0 text-right font-medium text-white">{formatKzt(car.firstReg)}</span>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-zinc-300">СВХ расходы:</span>
-                            <span className="font-medium text-white">{formatKzt(car.svhExpenses)}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs text-zinc-300 sm:text-sm">СВХ расходы:</span>
+                            <span className="shrink-0 text-right font-medium text-white">{formatKzt(car.svhExpenses)}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Итог */}
-                      <div className="rounded-2xl border border-[#F5C542]/35 bg-gradient-to-r from-[#F5C542]/20 to-transparent p-4">
+                      <div className="rounded-2xl border border-[#F5C542]/35 bg-gradient-to-r from-[#F5C542]/20 to-transparent p-3 sm:p-4">
                         <p className="text-sm text-zinc-300">Стоимость под ключ:</p>
-                        <p className="mt-1 text-2xl font-semibold text-[#F5C542] md:text-3xl">{formatKzt(car.total)}</p>
+                        <p className="mt-1 break-all text-xl font-semibold text-[#F5C542] sm:text-2xl md:text-3xl">{formatKzt(car.total)}</p>
                       </div>
                     </div>
                   </div>
@@ -604,8 +646,8 @@ export default function Home() {
                   </Button>
 
                   {/* Схема кузова Encar */}
-                  <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-4">
-                    <h3 className="mb-3 text-lg font-semibold text-[#F5C542]">Состояние кузова</h3>
+                  <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-3 sm:p-4">
+                    <h3 className="mb-3 text-base font-semibold text-[#F5C542] sm:text-lg">Состояние кузова</h3>
                     <EncarBodyScheme bodyDamage={car.bodyDamage || []} />
                     {(car.bodyDamage?.length ?? 0) > 0 ? (
                       <div className="mt-3 space-y-2">
@@ -615,10 +657,10 @@ export default function Home() {
                           return (
                             <div
                               key={`${d.part}-${code}-${i}`}
-                              className="flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-zinc-900/60 px-4 py-2.5"
+                              className="flex items-center justify-between gap-2 rounded-xl border border-white/5 bg-zinc-900/60 px-3 py-2.5 sm:gap-3 sm:px-4"
                             >
-                              <span className="text-sm text-white">{d.part}</span>
-                              <span className="flex items-center gap-2 text-xs font-semibold" style={{ color: meta?.color || "#F5C542" }}>
+                              <span className="min-w-0 truncate text-sm text-white">{d.part}</span>
+                              <span className="flex shrink-0 items-center gap-2 text-xs font-semibold" style={{ color: meta?.color || "#F5C542" }}>
                                 {meta && (
                                   <span
                                     className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-extrabold text-white"
@@ -627,7 +669,7 @@ export default function Home() {
                                     {code}
                                   </span>
                                 )}
-                                {meta?.labelRu || d.status}
+                                <span className="hidden sm:inline">{meta?.labelRu || d.status}</span>
                               </span>
                             </div>
                           )
@@ -639,36 +681,36 @@ export default function Home() {
                   </div>
 
                   {/* Страховая история Encar */}
-                  <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-4">
-                    <h3 className="mb-3 text-lg font-semibold text-[#F5C542]">Страховая история</h3>
+                  <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-3 sm:p-4">
+                    <h3 className="mb-3 text-base font-semibold text-[#F5C542] sm:text-lg">Страховая история</h3>
                     {car.insuranceSummary?.vehicleNo && (
                       <p className="mb-3 text-xs text-zinc-500">Номер авто: {car.insuranceSummary.vehicleNo}</p>
                     )}
-                    <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
-                        <p className="text-xl font-bold text-white">{car.insuranceRecords?.length ?? 0}</p>
-                        <p className="mt-1 text-[11px] text-zinc-500">Случаев</p>
+                    <div className="mb-4 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
+                      <div className="rounded-xl bg-zinc-900/80 p-2.5 text-center sm:p-3">
+                        <p className="text-lg font-bold text-white sm:text-xl">{car.insuranceRecords?.length ?? 0}</p>
+                        <p className="mt-1 text-[10px] text-zinc-500 sm:text-[11px]">Случаев</p>
                       </div>
-                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
-                        <p className="text-xl font-bold text-white">{car.insuranceSummary?.myAccidentCnt ?? 0}</p>
-                        <p className="mt-1 text-[11px] text-zinc-500">Своё ДТП</p>
+                      <div className="rounded-xl bg-zinc-900/80 p-2.5 text-center sm:p-3">
+                        <p className="text-lg font-bold text-white sm:text-xl">{car.insuranceSummary?.myAccidentCnt ?? 0}</p>
+                        <p className="mt-1 text-[10px] text-zinc-500 sm:text-[11px]">Своё ДТП</p>
                       </div>
-                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
-                        <p className="text-xl font-bold text-white">{car.insuranceSummary?.otherAccidentCnt ?? 0}</p>
-                        <p className="mt-1 text-[11px] text-zinc-500">Чужое ДТП</p>
+                      <div className="rounded-xl bg-zinc-900/80 p-2.5 text-center sm:p-3">
+                        <p className="text-lg font-bold text-white sm:text-xl">{car.insuranceSummary?.otherAccidentCnt ?? 0}</p>
+                        <p className="mt-1 text-[10px] text-zinc-500 sm:text-[11px]">Чужое ДТП</p>
                       </div>
-                      <div className="rounded-xl bg-zinc-900/80 p-3 text-center">
-                        <p className="text-xl font-bold text-white">{car.insuranceSummary?.ownerChangeCnt ?? 0}</p>
-                        <p className="mt-1 text-[11px] text-zinc-500">Смен владельца</p>
+                      <div className="rounded-xl bg-zinc-900/80 p-2.5 text-center sm:p-3">
+                        <p className="text-lg font-bold text-white sm:text-xl">{car.insuranceSummary?.ownerChangeCnt ?? 0}</p>
+                        <p className="mt-1 text-[10px] text-zinc-500 sm:text-[11px]">Смен владельца</p>
                       </div>
                     </div>
                     {(car.insuranceRecords?.length ?? 0) > 0 ? (
                       <div className="space-y-2">
                         {car.insuranceRecords!.map((rec, i) => (
-                          <div key={`${rec.date}-${rec.type}-${i}`} className="rounded-xl border border-white/5 bg-zinc-900/60 px-4 py-3">
-                            <div className="flex items-center justify-between gap-3">
+                          <div key={`${rec.date}-${rec.type}-${i}`} className="rounded-xl border border-white/5 bg-zinc-900/60 px-3 py-3 sm:px-4">
+                            <div className="flex items-start justify-between gap-2 sm:gap-3">
                               <span className="text-sm font-medium text-white">{rec.type}</span>
-                              {rec.date ? <span className="text-xs text-zinc-500">{rec.date}</span> : null}
+                              {rec.date ? <span className="shrink-0 text-xs text-zinc-500">{rec.date}</span> : null}
                             </div>
                             {rec.amount > 0 && (
                               <p className="mt-1 text-xs font-semibold text-[#F5C542]">
@@ -676,7 +718,7 @@ export default function Home() {
                               </p>
                             )}
                             {rec.description ? (
-                              <p className="mt-1 text-xs text-zinc-400">{rec.description}</p>
+                              <p className="mt-1 text-xs leading-relaxed text-zinc-400">{rec.description}</p>
                             ) : null}
                           </div>
                         ))}
@@ -692,9 +734,9 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* Элемент для PDF генерации — ровно A4 (794×1123 @96dpi) */}
+          {/* Элемент для PDF генерации — скрыт на мобилке, на desktop превью */}
           {car && (
-            <div className="mt-5 overflow-x-auto">
+            <div className="mt-5 hidden overflow-x-auto md:block">
             <div
               id="car-pdf-content"
               className="pdf-content"
@@ -815,8 +857,8 @@ export default function Home() {
           )}
         </section>
 
-        <section className="mt-16">
-          <h2 className="mb-6 text-3xl font-semibold">Процесс импорта</h2>
+        <section className="mt-10 md:mt-16">
+          <h2 className="mb-4 text-2xl font-semibold sm:mb-6 sm:text-3xl">Процесс импорта</h2>
           <div className="grid gap-4 md:grid-cols-4">
             {[
               { icon: Globe2, title: "Выбор авто", text: "Подбираете вариант на Encar." },
@@ -838,10 +880,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-16">
-          <h2 className="mb-6 text-3xl font-semibold">Encar — покупка авто из Кореи</h2>
+        <section className="mt-10 md:mt-16">
+          <h2 className="mb-4 text-2xl font-semibold sm:mb-6 sm:text-3xl">Encar — покупка авто из Кореи</h2>
           <Card>
-            <CardContent className="space-y-6 p-6">
+            <CardContent className="space-y-5 p-4 sm:space-y-6 sm:p-6">
               <div className="rounded-lg bg-zinc-900/50 p-4">
                 <h3 className="mb-3 font-bold text-[#F5C542]">1. Наша услуга — <span className="text-white">700$</span></h3>
                 <p className="text-sm text-zinc-300">В эту стоимость входит автоподбор. С Вами мы подберем автомобиль под ваши требования и предпочтения. Далее, интересующий вас автомобиль наши сотрудники в Корее поедут проверять на тех.состояние, наличие повреждений, дефектов и т.д. Все это сопровождается обязательным видеоотчетом для вас.</p>
@@ -875,10 +917,10 @@ export default function Home() {
           </Card>
         </section>
 
-        <section className="mt-16">
-          <h2 className="mb-6 text-3xl font-semibold">Аукцион HeyDealer</h2>
+        <section className="mt-10 md:mt-16">
+          <h2 className="mb-4 text-2xl font-semibold sm:mb-6 sm:text-3xl">Аукцион HeyDealer</h2>
           <Card>
-            <CardContent className="space-y-6 p-6">
+            <CardContent className="space-y-5 p-4 sm:space-y-6 sm:p-6">
               <p className="text-zinc-300">
                 Мы подбираем для вас лучшие варианты под ваш бюджет и запрос — отправляем лично или публикуем в Telegram. Вы выбираете автомобиль, который вам нравится.
               </p>

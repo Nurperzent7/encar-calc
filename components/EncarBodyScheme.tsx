@@ -79,12 +79,15 @@ function DamageBadge({
   onSelect: () => void;
 }) {
   const meta = META_BY_CODE[code] || META_BY_CODE.W;
+  const r = active ? 14 : 12;
   return (
     <g onClick={onSelect} style={{ cursor: "pointer" }}>
+      {/* Larger invisible hit area for touch */}
+      <circle cx={x} cy={y} r={22} fill="transparent" />
       <circle
         cx={x}
         cy={y}
-        r={active ? 13 : 11}
+        r={r}
         fill={meta.color}
         stroke="#fff"
         strokeWidth={2}
@@ -98,6 +101,7 @@ function DamageBadge({
         fontSize="11"
         fontWeight="800"
         fontFamily="system-ui, sans-serif"
+        style={{ pointerEvents: "none" }}
       >
         {code}
       </text>
@@ -121,27 +125,33 @@ export function EncarBodyScheme({ bodyDamage }: { bodyDamage: Damage[] }) {
   const wheel = "#6B7280";
 
   return (
-    <div className="bg-white rounded-2xl p-3 mb-4 border border-[#E5E7EB]">
-      <div className="h-8 mb-1 flex items-center justify-center">
+    <div className="mb-0 rounded-xl border border-[#E5E7EB] bg-white p-2 sm:mb-4 sm:rounded-2xl sm:p-3">
+      <div className="mb-1 flex min-h-8 items-center justify-center px-1">
         {selectedItem && selectedMeta ? (
           <div
-            className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold"
+            className="flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold sm:gap-2 sm:px-3 sm:text-xs"
             style={{ background: "#F8FAFC", color: selectedMeta.color, border: `1px solid ${selectedMeta.color}` }}
           >
             <span
-              className="w-5 h-5 rounded-full text-white text-[10px] font-extrabold flex items-center justify-center"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold text-white"
               style={{ background: selectedMeta.color }}
             >
               {selectedItem.code}
             </span>
-            {selectedItem.part} — {selectedMeta.labelRu}
+            <span className="truncate">
+              {selectedItem.part} — {selectedMeta.labelRu}
+            </span>
           </div>
         ) : (
-          <p className="text-xs text-[#9CA3AF]">Нажмите на метку повреждения</p>
+          <p className="text-center text-[11px] text-[#9CA3AF] sm:text-xs">Нажмите на метку повреждения</p>
         )}
       </div>
 
-      <svg viewBox="0 0 400 460" className="w-full max-w-[380px] mx-auto block" fill="none">
+      <svg
+        viewBox="0 0 400 460"
+        className="mx-auto block h-auto w-full max-w-[320px] touch-manipulation sm:max-w-[380px]"
+        fill="none"
+      >
         {/* ===== LEFT SIDE PROFILE (front up) ===== */}
         <g>
           {/* body */}
@@ -249,20 +259,20 @@ export function EncarBodyScheme({ bodyDamage }: { bodyDamage: Damage[] }) {
       </svg>
 
       {/* Encar legend */}
-      <div className="flex flex-wrap justify-center gap-x-3 gap-y-2 mt-2 pt-3 border-t border-[#F0F0F0]">
+      <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1.5 border-t border-[#F0F0F0] pt-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-3 sm:gap-y-2 sm:pt-3">
         {Object.values(ENCAR_DAMAGE).map((item) => (
           <div key={item.code} className="flex items-center gap-1.5">
             <span
-              className="w-5 h-5 rounded-full text-white text-[10px] font-extrabold flex items-center justify-center"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold text-white"
               style={{ background: item.color }}
             >
               {item.code}
             </span>
-            <span className="text-[11px] text-[#4B5563] font-medium">{item.labelRu}</span>
+            <span className="text-[10px] font-medium leading-tight text-[#4B5563] sm:text-[11px]">{item.labelRu}</span>
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-[#A1A1AA] text-center mt-2">
+      <p className="mt-1.5 hidden text-center text-[10px] text-[#A1A1AA] sm:mt-2 sm:block">
         * Схема как в отчёте Encar (обмен / правка / коррозия / царапины / вмятина / повреждение)
       </p>
     </div>

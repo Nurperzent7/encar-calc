@@ -6,7 +6,7 @@ function Select({ className, ...props }: React.ComponentProps<"select">) {
   return (
     <select
       className={cn(
-        "flex h-12 w-full rounded-2xl border border-white/10 bg-[#151515] px-4 text-sm text-white outline-none transition-all focus:border-[#F5C542]/60 focus:ring-2 focus:ring-[#F5C542]/20",
+        "flex h-12 w-full rounded-2xl border border-white/10 bg-[#151515] px-4 text-base text-white outline-none transition-all focus:border-[#F5C542]/60 focus:ring-2 focus:ring-[#F5C542]/20 md:text-sm",
         className
       )}
       {...props}
