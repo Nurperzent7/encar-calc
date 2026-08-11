@@ -12,6 +12,10 @@ import {
   type InsuranceRecordItem,
   type InsuranceSummary,
 } from "@/lib/encar-insurance"
+import {
+  fetchEncarBodyDamage,
+  type BodyDamageItem,
+} from "@/lib/encar-inspection"
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
@@ -536,14 +540,23 @@ export async function POST(req: Request) {
 
     let insuranceRecords: InsuranceRecordItem[] = []
     let insuranceSummary: InsuranceSummary = {}
+    let bodyDamage: BodyDamageItem[] = []
     const encarVehicleId = extractEncarVehicleId(String(url))
     if (encarVehicleId && source === "encar") {
-      try {
-        const hist = await fetchEncarInsuranceHistory(encarVehicleId)
-        insuranceRecords = hist.insuranceRecords
-        insuranceSummary = hist.insuranceSummary
-      } catch (e) {
-        console.warn("[encar-insurance]", e)
+      const [histResult, inspResult] = await Promise.allSettled([
+        fetchEncarInsuranceHistory(encarVehicleId),
+        fetchEncarBodyDamage(encarVehicleId),
+      ])
+      if (histResult.status === "fulfilled") {
+        insuranceRecords = histResult.value.insuranceRecords
+        insuranceSummary = histResult.value.insuranceSummary
+      } else {
+        console.warn("[encar-insurance]", histResult.reason)
+      }
+      if (inspResult.status === "fulfilled") {
+        bodyDamage = inspResult.value.bodyDamage
+      } else {
+        console.warn("[encar-inspection]", inspResult.reason)
       }
     }
 
@@ -621,6 +634,7 @@ export async function POST(req: Request) {
       images: finalImages,
       insuranceRecords,
       insuranceSummary,
+      bodyDamage,
     })
   } catch (error) {
     console.log(error)

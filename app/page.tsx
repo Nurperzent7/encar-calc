@@ -18,6 +18,7 @@ import {
   Truck,
 } from "lucide-react"
 
+import { EncarBodyScheme, META_BY_CODE } from "@/components/EncarBodyScheme"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -70,6 +71,7 @@ type CarResult = {
     otherAccidentCost?: number
     vehicleNo?: string
   } | null
+  bodyDamage?: Array<{ part: string; status: string; code?: string }>
 }
 
 const fadeUp = {
@@ -209,6 +211,7 @@ export default function Home() {
         selectedEngine: `${engine} л`,
         insuranceRecords: Array.isArray(data.insuranceRecords) ? data.insuranceRecords : [],
         insuranceSummary: data.insuranceSummary || null,
+        bodyDamage: Array.isArray(data.bodyDamage) ? data.bodyDamage : [],
       })
       setActiveImage(0)
     } catch (e) {
@@ -599,6 +602,41 @@ export default function Home() {
                   >
                     Написать в Telegram
                   </Button>
+
+                  {/* Схема кузова Encar */}
+                  <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-4">
+                    <h3 className="mb-3 text-lg font-semibold text-[#F5C542]">Состояние кузова</h3>
+                    <EncarBodyScheme bodyDamage={car.bodyDamage || []} />
+                    {(car.bodyDamage?.length ?? 0) > 0 ? (
+                      <div className="mt-3 space-y-2">
+                        {car.bodyDamage!.map((d, i) => {
+                          const code = (d.code || "").toUpperCase()
+                          const meta = META_BY_CODE[code]
+                          return (
+                            <div
+                              key={`${d.part}-${code}-${i}`}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-zinc-900/60 px-4 py-2.5"
+                            >
+                              <span className="text-sm text-white">{d.part}</span>
+                              <span className="flex items-center gap-2 text-xs font-semibold" style={{ color: meta?.color || "#F5C542" }}>
+                                {meta && (
+                                  <span
+                                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-extrabold text-white"
+                                    style={{ background: meta.color }}
+                                  >
+                                    {code}
+                                  </span>
+                                )}
+                                {meta?.labelRu || d.status}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-zinc-500">Повреждений кузова в отчёте Encar не отмечено.</p>
+                    )}
+                  </div>
 
                   {/* Страховая история Encar */}
                   <div className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-4">
