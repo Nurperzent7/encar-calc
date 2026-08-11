@@ -214,6 +214,9 @@ export default function Home() {
         bodyDamage: Array.isArray(data.bodyDamage) ? data.bodyDamage : [],
       })
       setActiveImage(0)
+      setTimeout(() => {
+        document.getElementById("car-card")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 100)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Не удалось выполнить расчет")
     } finally {
@@ -322,9 +325,9 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#0A0A0A] text-white">
-      <div className="pointer-events-none absolute left-1/2 top-[-120px] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#F5C542]/10 blur-[120px]" />
-      <div className="mx-auto w-full max-w-7xl px-3 pb-20 pt-4 sm:px-4 md:px-8 md:pb-16 md:pt-6 lg:px-12">
-        <header className="mb-4 flex items-center gap-3 md:mb-6">
+      <div className="pointer-events-none absolute left-1/2 top-[-120px] h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-[#F5C542]/10 blur-[100px] sm:h-[520px] sm:w-[520px] sm:blur-[120px]" />
+      <div className="mx-auto w-full max-w-7xl px-3 pb-28 pt-[max(1rem,env(safe-area-inset-top))] sm:px-4 md:px-8 md:pb-16 md:pt-6 lg:px-12">
+        <header className="mb-3 flex items-center gap-2.5 md:mb-6 md:gap-3">
           <img
             src="/logo.jpg"
             alt="avtodom969"
@@ -334,12 +337,12 @@ export default function Home() {
             avtodom969
           </span>
         </header>
-        <motion.section initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.6 }} className="grid items-center gap-6 py-6 md:grid-cols-2 md:gap-10 md:py-16">
+        <motion.section initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.6 }} className="grid items-center gap-5 py-4 md:grid-cols-2 md:gap-10 md:py-16">
           <div className="space-y-4 md:space-y-6">
-            <h1 className="text-balance text-4xl font-bold leading-tight text-[#F5C542] sm:text-5xl md:text-7xl">
+            <h1 className="text-balance text-[2.15rem] font-bold leading-[1.1] tracking-tight text-[#F5C542] sm:text-5xl md:text-7xl">
               AVTODOM969
             </h1>
-            <h2 className="text-balance text-xl font-semibold leading-tight text-zinc-200 sm:text-2xl md:text-3xl">
+            <h2 className="text-balance text-lg font-semibold leading-snug text-zinc-200 sm:text-2xl md:text-3xl">
               Импорт авто из Кореи в Казахстан
             </h2>
             <div className="flex flex-wrap gap-3">
@@ -348,43 +351,45 @@ export default function Home() {
               </Button>
             </div>
             <div className="grid grid-cols-3 gap-2 pt-1 sm:flex sm:flex-wrap sm:gap-3 sm:pt-2">
-              <Button variant="ghost" onClick={() => window.open("https://wa.me/77076961969", "_blank")} className="border border-green-500/50 px-2 text-xs text-green-400 hover:bg-green-500/10 sm:px-5 sm:text-sm">
+              <Button variant="ghost" onClick={() => window.open("https://wa.me/77076961969", "_blank")} className="h-11 border border-green-500/50 px-1.5 text-[11px] text-green-400 hover:bg-green-500/10 sm:px-5 sm:text-sm">
                 WhatsApp
               </Button>
-              <Button variant="ghost" onClick={() => window.open("https://www.instagram.com/avtodom969/", "_blank")} className="border border-pink-500/50 px-2 text-xs text-pink-400 hover:bg-pink-500/10 sm:px-5 sm:text-sm">
+              <Button variant="ghost" onClick={() => window.open("https://www.instagram.com/avtodom969/", "_blank")} className="h-11 border border-pink-500/50 px-1.5 text-[11px] text-pink-400 hover:bg-pink-500/10 sm:px-5 sm:text-sm">
                 Instagram
               </Button>
-              <Button variant="ghost" onClick={() => window.open("https://t.me/avtodom969", "_blank")} className="border border-blue-500/50 px-2 text-xs text-blue-400 hover:bg-blue-500/10 sm:px-5 sm:text-sm">
+              <Button variant="ghost" onClick={() => window.open("https://t.me/avtodom969", "_blank")} className="h-11 border border-blue-500/50 px-1.5 text-[11px] text-blue-400 hover:bg-blue-500/10 sm:px-5 sm:text-sm">
                 Telegram
               </Button>
             </div>
           </div>
-          <Card className="relative overflow-hidden bg-black">
+          <Card className="relative hidden overflow-hidden bg-black sm:block">
             <img
               src="/logo.jpg"
               alt="AVTODOM969"
-              className="h-[220px] w-full object-contain sm:h-[340px] md:h-[430px]"
+              className="h-[280px] w-full object-contain md:h-[430px]"
             />
           </Card>
         </motion.section>
 
-        <section id="calculator" className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section id="calculator" className="scroll-mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:gap-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
             <Card>
-              <CardContent className="space-y-4 p-4 sm:p-6 md:p-8">
-                <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <CardContent className="space-y-3 p-4 sm:space-y-4 sm:p-6 md:p-8">
+                <div className="mb-1 flex flex-col gap-2 sm:mb-2 sm:flex-row sm:items-center sm:justify-between">
                   <h2 className="text-xl font-semibold sm:text-2xl md:text-3xl">Калькулятор стоимости</h2>
                   <Badge className="w-fit bg-[#F5C542]/10 text-[#F5C542]">Live Estimate</Badge>
                 </div>
                 <Input
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="Вставьте ссылку Encar"
+                  placeholder="Ссылка Encar"
+                  className="min-w-0"
                 />
                 <Input
                   value={heydealerUrl}
                   onChange={(e) => setHeydealerUrl(e.target.value)}
-                  placeholder="Вставьте ссылку HeyDealer"
+                  placeholder="Ссылка HeyDealer"
+                  className="min-w-0"
                 />
                 <Select value={engine} onChange={(e) => setEngine(e.target.value)}>
                   {["1.0", "1.3", "1.5", "1.6", "2.0", "2.2", "2.4", "2.5", "3.0", "3.3", "3.5", "4.0", "4.4", "5.0", "5.5", "6.0", "6.2"].map((item) => (
@@ -393,48 +398,52 @@ export default function Home() {
                 </Select>
 
                 {/* Поля для курсов валют */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-zinc-400">Курс USD → KZT</label>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="min-w-0">
+                    <label className="text-[11px] text-zinc-400 sm:text-xs">Курс USD → KZT</label>
                     <Input
                       type="number"
                       inputMode="decimal"
                       value={usdKztRate}
                       onChange={(e) => setUsdKztRate(Number(e.target.value))}
                       placeholder="500"
+                      className="px-3"
                     />
                   </div>
-                  <div>
-                    <label className="text-xs text-zinc-400">Курс KRW → USD</label>
+                  <div className="min-w-0">
+                    <label className="text-[11px] text-zinc-400 sm:text-xs">Курс KRW → USD</label>
                     <Input
                       type="number"
                       inputMode="decimal"
                       value={krwUsdRate}
                       onChange={(e) => setKrwUsdRate(Number(e.target.value))}
                       placeholder="1450"
+                      className="px-3"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-zinc-400">Доставка (USD)</label>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="min-w-0">
+                    <label className="text-[11px] text-zinc-400 sm:text-xs">Доставка (USD)</label>
                     <Input
                       type="number"
                       inputMode="decimal"
                       value={deliveryUsd}
                       onChange={(e) => setDeliveryUsd(Number(e.target.value))}
                       placeholder="2500"
+                      className="px-3"
                     />
                   </div>
-                  <div>
-                    <label className="text-xs text-zinc-400">Таможня (₸)</label>
+                  <div className="min-w-0">
+                    <label className="text-[11px] text-zinc-400 sm:text-xs">Таможня (₸)</label>
                     <Input
                       type="number"
                       inputMode="decimal"
                       value={customsKzt}
                       onChange={(e) => setCustomsKzt(Number(e.target.value))}
                       placeholder="0"
+                      className="px-3"
                     />
                   </div>
                 </div>
@@ -447,7 +456,7 @@ export default function Home() {
             </Card>
           </motion.div>
 
-          <motion.aside initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
+          <motion.aside initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} className="hidden lg:block">
             <Card className="lg:sticky lg:top-6">
               <CardContent className="space-y-4 p-4 sm:p-6">
                 <p className="text-sm uppercase tracking-wide text-zinc-400">Стоимость под ключ</p>
@@ -463,13 +472,13 @@ export default function Home() {
                           </span>
                         </span>
                       </div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-3">
                         <span>Расходы в Казахстане:</span>
-                        <span>{formatKzt((Number(car.customs) || 0) + car.util + car.firstReg + car.svhExpenses + car.broker + car.excise)}</span>
+                        <span className="shrink-0 text-right">{formatKzt((Number(car.customs) || 0) + car.util + car.firstReg + car.svhExpenses + car.broker + car.excise)}</span>
                       </div>
-                      <div className="flex items-center justify-between border-t border-zinc-700 pt-2">
-                        <span className="text-white font-medium">Итого:</span>
-                        <span className="text-[#F5C542] font-semibold">{formatKzt(car.total)}</span>
+                      <div className="flex items-center justify-between gap-3 border-t border-zinc-700 pt-2">
+                        <span className="font-medium text-white">Итого:</span>
+                        <span className="shrink-0 font-semibold text-[#F5C542]">{formatKzt(car.total)}</span>
                       </div>
                     </>
                   ) : (
@@ -481,12 +490,12 @@ export default function Home() {
           </motion.aside>
         </section>
 
-        <section className="mt-8">
+        <section className="mt-4 md:mt-8">
           {!car && loading ? (
             <Card>
-              <CardContent className="space-y-4 p-6 md:p-8">
+              <CardContent className="space-y-4 p-4 md:p-8">
                 <Skeleton className="h-8 w-2/3" />
-                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-48 w-full sm:h-64" />
                 <div className="grid gap-3 md:grid-cols-2">
                   <Skeleton className="h-16 w-full" />
                   <Skeleton className="h-16 w-full" />
@@ -496,9 +505,9 @@ export default function Home() {
           ) : null}
 
           {car && (
-            <motion.div id="car-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div id="car-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="scroll-mt-4">
               <Card>
-                <CardContent className="space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8">
+                <CardContent className="space-y-4 p-3 sm:space-y-6 sm:p-6 md:p-8">
                   <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                     <h3 className="text-xl font-semibold leading-snug sm:text-2xl md:text-3xl">{car.title}</h3>
                     <div className="flex w-full items-center gap-2 sm:w-auto">
@@ -857,9 +866,9 @@ export default function Home() {
           )}
         </section>
 
-        <section className="mt-10 md:mt-16">
-          <h2 className="mb-4 text-2xl font-semibold sm:mb-6 sm:text-3xl">Процесс импорта</h2>
-          <div className="grid gap-4 md:grid-cols-4">
+        <section className="mt-8 md:mt-16">
+          <h2 className="mb-3 text-xl font-semibold sm:mb-6 sm:text-2xl md:text-3xl">Процесс импорта</h2>
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-4">
             {[
               { icon: Globe2, title: "Выбор авто", text: "Подбираете вариант на Encar." },
               { icon: BadgeDollarSign, title: "Финальный расчет", text: "Считаем до тенге за 1 клик." },
@@ -867,88 +876,88 @@ export default function Home() {
               { icon: CheckCircle2, title: "Выдача в РК", text: "Получаете готовый авто пакет." },
             ].map((step, i) => (
               <Card key={step.title}>
-                <CardContent className="space-y-2 p-5">
+                <CardContent className="space-y-1.5 p-3 sm:space-y-2 sm:p-5">
                   <div className="flex items-center justify-between">
-                    <step.icon className="h-5 w-5 text-[#F5C542]" />
-                    <span className="text-xs text-zinc-500">0{i + 1}</span>
+                    <step.icon className="h-4 w-4 text-[#F5C542] sm:h-5 sm:w-5" />
+                    <span className="text-[10px] text-zinc-500 sm:text-xs">0{i + 1}</span>
                   </div>
-                  <p className="font-medium">{step.title}</p>
-                  <p className="text-sm text-zinc-300">{step.text}</p>
+                  <p className="text-sm font-medium leading-snug sm:text-base">{step.title}</p>
+                  <p className="text-[11px] leading-snug text-zinc-300 sm:text-sm">{step.text}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         </section>
 
-        <section className="mt-10 md:mt-16">
-          <h2 className="mb-4 text-2xl font-semibold sm:mb-6 sm:text-3xl">Encar — покупка авто из Кореи</h2>
+        <section className="mt-8 md:mt-16">
+          <h2 className="mb-3 text-xl font-semibold sm:mb-6 sm:text-2xl md:text-3xl">Encar — покупка авто из Кореи</h2>
           <Card>
-            <CardContent className="space-y-5 p-4 sm:space-y-6 sm:p-6">
-              <div className="rounded-lg bg-zinc-900/50 p-4">
-                <h3 className="mb-3 font-bold text-[#F5C542]">1. Наша услуга — <span className="text-white">700$</span></h3>
-                <p className="text-sm text-zinc-300">В эту стоимость входит автоподбор. С Вами мы подберем автомобиль под ваши требования и предпочтения. Далее, интересующий вас автомобиль наши сотрудники в Корее поедут проверять на тех.состояние, наличие повреждений, дефектов и т.д. Все это сопровождается обязательным видеоотчетом для вас.</p>
+            <CardContent className="space-y-3 p-3 sm:space-y-6 sm:p-6">
+              <div className="rounded-xl bg-zinc-900/50 p-3 sm:rounded-lg sm:p-4">
+                <h3 className="mb-2 text-sm font-bold text-[#F5C542] sm:mb-3 sm:text-base">1. Наша услуга — <span className="text-white">700$</span></h3>
+                <p className="text-[13px] leading-relaxed text-zinc-300 sm:text-sm">В эту стоимость входит автоподбор. С Вами мы подберем автомобиль под ваши требования и предпочтения. Далее, интересующий вас автомобиль наши сотрудники в Корее поедут проверять на тех.состояние, наличие повреждений, дефектов и т.д. Все это сопровождается обязательным видеоотчетом для вас.</p>
               </div>
 
-              <div className="rounded-lg bg-zinc-900/50 p-4">
-                <h3 className="mb-3 font-bold text-[#F5C542]">2. Покупка и доставка</h3>
-                <p className="mb-3 text-sm text-zinc-300">Когда уже утвердили покупку автомобиля, продавец авто выставляет счет на оплату (инвойс) на стоимость через наш офис в Республике Корея. Вы должны будете оплатить инвойс через банк в течении трех дней.</p>
-                <p className="mb-3 text-sm text-zinc-300">Еще оплачиваются логистические расходы до Алматы — <span className="font-bold text-white">2000$</span>. После мы бронируем автомобиль, вносим задаток. После поступления оплаты за машину (обычно 3 рабочих дней) привозят к нам на парковку (в Корее), готовят экспортную документацию и отправляют в порт.</p>
-                <p className="text-sm text-zinc-300">Далее ТС грузят на корабль и отправляют в Китай, оттуда автовозы принимают наши автомобили и доставляют до Казахстана.</p>
+              <div className="rounded-xl bg-zinc-900/50 p-3 sm:rounded-lg sm:p-4">
+                <h3 className="mb-2 text-sm font-bold text-[#F5C542] sm:mb-3 sm:text-base">2. Покупка и доставка</h3>
+                <p className="mb-2 text-[13px] leading-relaxed text-zinc-300 sm:mb-3 sm:text-sm">Когда уже утвердили покупку автомобиля, продавец авто выставляет счет на оплату (инвойс) на стоимость через наш офис в Республике Корея. Вы должны будете оплатить инвойс через банк в течении трех дней.</p>
+                <p className="mb-2 text-[13px] leading-relaxed text-zinc-300 sm:mb-3 sm:text-sm">Еще оплачиваются логистические расходы до Алматы — <span className="font-bold text-white">2000$</span>. После мы бронируем автомобиль, вносим задаток. После поступления оплаты за машину (обычно 3 рабочих дней) привозят к нам на парковку (в Корее), готовят экспортную документацию и отправляют в порт.</p>
+                <p className="text-[13px] leading-relaxed text-zinc-300 sm:text-sm">Далее ТС грузят на корабль и отправляют в Китай, оттуда автовозы принимают наши автомобили и доставляют до Казахстана.</p>
               </div>
 
-              <div className="rounded-lg bg-zinc-900/50 p-4">
-                <h3 className="mb-3 font-bold text-[#F5C542]">3. Прибытие в Казахстан</h3>
-                <p className="text-sm text-zinc-300">По прибытию автомобиля к нам в Алматы, оплачиваются таможенные пошлины и расходы, в виде сертификата безопасности, растаможки, НДС и утильсбора.</p>
+              <div className="rounded-xl bg-zinc-900/50 p-3 sm:rounded-lg sm:p-4">
+                <h3 className="mb-2 text-sm font-bold text-[#F5C542] sm:mb-3 sm:text-base">3. Прибытие в Казахстан</h3>
+                <p className="text-[13px] leading-relaxed text-zinc-300 sm:text-sm">По прибытию автомобиля к нам в Алматы, оплачиваются таможенные пошлины и расходы, в виде сертификата безопасности, растаможки, НДС и утильсбора.</p>
               </div>
 
-              <div className="rounded-lg border border-[#F5C542]/30 bg-[#F5C542]/5 p-4">
-                <h3 className="mb-3 font-bold">📌 Сроки доставки</h3>
-                <ul className="space-y-2 text-sm text-zinc-300">
+              <div className="rounded-xl border border-[#F5C542]/30 bg-[#F5C542]/5 p-3 sm:rounded-lg sm:p-4">
+                <h3 className="mb-2 text-sm font-bold sm:mb-3 sm:text-base">Сроки доставки</h3>
+                <ul className="space-y-2 text-[13px] text-zinc-300 sm:text-sm">
                   <li>Автомобиль будет доставлен в Казахстан в течении <span className="font-bold text-white">30–35 дней</span></li>
                   <li>Таможенные процессы занимают до <span className="font-bold text-white">5 рабочих дней</span> в среднем</li>
                 </ul>
               </div>
 
-              <div className="rounded-lg bg-[#F5C542]/10 border border-[#F5C542]/30 p-4 text-center">
-                <p className="text-zinc-200 font-medium">Ваше ТС в обязательном порядке будет доставлено в целости и сохранности.</p>
-                <p className="text-sm text-zinc-400 mt-2">С уважением, команда Автодом.</p>
+              <div className="rounded-xl border border-[#F5C542]/30 bg-[#F5C542]/10 p-3 text-center sm:rounded-lg sm:p-4">
+                <p className="text-sm font-medium leading-snug text-zinc-200 sm:text-base">Ваше ТС в обязательном порядке будет доставлено в целости и сохранности.</p>
+                <p className="mt-2 text-xs text-zinc-400 sm:text-sm">С уважением, команда Автодом.</p>
               </div>
             </CardContent>
           </Card>
         </section>
 
-        <section className="mt-10 md:mt-16">
-          <h2 className="mb-4 text-2xl font-semibold sm:mb-6 sm:text-3xl">Аукцион HeyDealer</h2>
+        <section className="mt-8 md:mt-16">
+          <h2 className="mb-3 text-xl font-semibold sm:mb-6 sm:text-2xl md:text-3xl">Аукцион HeyDealer</h2>
           <Card>
-            <CardContent className="space-y-5 p-4 sm:space-y-6 sm:p-6">
-              <p className="text-zinc-300">
+            <CardContent className="space-y-3 p-3 sm:space-y-6 sm:p-6">
+              <p className="text-[13px] leading-relaxed text-zinc-300 sm:text-base">
                 Мы подбираем для вас лучшие варианты под ваш бюджет и запрос — отправляем лично или публикуем в Telegram. Вы выбираете автомобиль, который вам нравится.
               </p>
-              <p className="text-zinc-300">
+              <p className="text-[13px] leading-relaxed text-zinc-300 sm:text-base">
                 Далее вы оплачиваете нашу услугу — <span className="font-bold text-[#F5C542]">1000$</span>, и мы заключаем с вами договор. После этого начинаем работу по аукциону.
               </p>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-lg bg-zinc-900/50 p-4">
-                  <h3 className="mb-3 font-bold text-[#F5C542]">SELF — безопасный формат</h3>
-                  <p className="mb-3 text-sm text-zinc-300">Мы ставим ставку на автомобиль. Если ставка выигрывает, наши специалисты в Корее выезжают на осмотр и проводят полную проверку: компьютерная диагностика, кузов (толщиномер), салон и техническая часть.</p>
-                  <p className="text-sm text-zinc-300">После этого вы принимаете решение:</p>
-                  <div className="mt-2 space-y-1 text-sm">
+              <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+                <div className="rounded-xl bg-zinc-900/50 p-3 sm:rounded-lg sm:p-4">
+                  <h3 className="mb-2 text-sm font-bold text-[#F5C542] sm:mb-3 sm:text-base">SELF — безопасный формат</h3>
+                  <p className="mb-2 text-[13px] leading-relaxed text-zinc-300 sm:mb-3 sm:text-sm">Мы ставим ставку на автомобиль. Если ставка выигрывает, наши специалисты в Корее выезжают на осмотр и проводят полную проверку: компьютерная диагностика, кузов (толщиномер), салон и техническая часть.</p>
+                  <p className="text-[13px] text-zinc-300 sm:text-sm">После этого вы принимаете решение:</p>
+                  <div className="mt-2 space-y-1 text-[13px] sm:text-sm">
                     <div className="flex items-center gap-2"><span className="text-green-400">✔️</span> <span className="text-zinc-300">подходит — выкупаете</span></div>
                     <div className="flex items-center gap-2"><span className="text-red-400">❌</span> <span className="text-zinc-300">не подходит — отказываетесь</span></div>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-zinc-900/50 p-4">
-                  <h3 className="mb-3 font-bold text-[#F5C542]">ZERO — быстрый формат</h3>
-                  <p className="mb-3 text-sm text-zinc-300">По автомобилю уже есть вся подробная информация: фото, состояние, технические данные.</p>
-                  <p className="text-sm font-medium text-red-300">❗️ Если ставка выигрывает — автомобиль сразу выкупается без отказа.</p>
+                <div className="rounded-xl bg-zinc-900/50 p-3 sm:rounded-lg sm:p-4">
+                  <h3 className="mb-2 text-sm font-bold text-[#F5C542] sm:mb-3 sm:text-base">ZERO — быстрый формат</h3>
+                  <p className="mb-2 text-[13px] leading-relaxed text-zinc-300 sm:mb-3 sm:text-sm">По автомобилю уже есть вся подробная информация: фото, состояние, технические данные.</p>
+                  <p className="text-[13px] font-medium leading-snug text-red-300 sm:text-sm">❗️ Если ставка выигрывает — автомобиль сразу выкупается без отказа.</p>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-[#F5C542]/30 bg-[#F5C542]/5 p-4">
-                <h3 className="mb-3 font-bold">📌 Как проходит оплата (по этапно)</h3>
-                <ul className="space-y-2 text-sm text-zinc-300">
+              <div className="rounded-xl border border-[#F5C542]/30 bg-[#F5C542]/5 p-3 sm:rounded-lg sm:p-4">
+                <h3 className="mb-2 text-sm font-bold sm:mb-3 sm:text-base">Как проходит оплата (по этапно)</h3>
+                <ul className="space-y-2 text-[13px] leading-relaxed text-zinc-300 sm:text-sm">
                   <li>Если ставка сыграла: мы проверяем автомобиль → отправляем вам полный отчёт → вы подтверждаете покупку → оплачивается фактическая стоимость авто в Корее и оплачивается логистика — <span className="font-bold text-[#F5C542]">2000$</span></li>
                   <li>Мы подготавливаем все документы: снятие с учёта и экспортные документации!</li>
                   <li>Погрузка контейнера — 1 раз в неделю.</li>
@@ -956,24 +965,44 @@ export default function Home() {
                 </ul>
               </div>
 
-              <div className="rounded-lg bg-zinc-900/50 p-4">
-                <h3 className="mb-2 font-bold">📌 По прибытию в Казахстан оплачиваются:</h3>
-                <p className="text-sm text-zinc-300">таможня, утильсбор, первичная регистрация и СВХ.</p>
+              <div className="rounded-xl bg-zinc-900/50 p-3 sm:rounded-lg sm:p-4">
+                <h3 className="mb-2 text-sm font-bold sm:text-base">По прибытию в Казахстан оплачиваются:</h3>
+                <p className="text-[13px] text-zinc-300 sm:text-sm">таможня, утильсбор, первичная регистрация и СВХ.</p>
               </div>
 
-              <div className="rounded-lg bg-[#0088cc]/10 border border-[#0088cc]/30 p-4 text-center">
-                <p className="text-zinc-200">📩 Можем сразу сделать просчёт под ваш бюджет и подобрать варианты под вас — просто напишите.</p>
+              <div className="rounded-xl border border-[#0088cc]/30 bg-[#0088cc]/10 p-3 text-center sm:rounded-lg sm:p-4">
+                <p className="text-[13px] leading-snug text-zinc-200 sm:text-base">Можем сразу сделать просчёт под ваш бюджет и подобрать варианты под вас — просто напишите.</p>
               </div>
             </CardContent>
           </Card>
         </section>
 
-        <footer className="mt-16 border-t border-white/10 py-8 text-sm text-zinc-400">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <footer className="mt-10 border-t border-white/10 py-6 text-xs text-zinc-400 sm:mt-16 sm:py-8 sm:text-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
             <p>AVTODOM969 · Казахстан</p>
             <p>© 2026 AVTODOM969</p>
           </div>
         </footer>
+      </div>
+
+      {/* Мобильная нижняя панель */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#0A0A0A]/95 px-3 pt-2.5 backdrop-blur-xl md:hidden" style={{ paddingBottom: "max(0.65rem, env(safe-area-inset-bottom))" }}>
+        <div className="mx-auto flex max-w-7xl gap-2">
+          <Button
+            size="lg"
+            className="min-w-0 flex-1 px-3 text-sm"
+            onClick={() => document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" })}
+          >
+            Рассчитать
+          </Button>
+          <Button
+            size="lg"
+            className="min-w-0 flex-1 bg-[#0088cc] px-3 text-sm text-white shadow-none hover:bg-[#0077b5]"
+            onClick={() => window.open("https://t.me/avtodom969", "_blank")}
+          >
+            Telegram
+          </Button>
+        </div>
       </div>
     </main>
   )

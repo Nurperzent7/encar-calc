@@ -9,7 +9,7 @@ function Card({
   return (
     <div
       className={cn(
-        "rounded-[24px] border border-white/10 bg-[#111111]/80 backdrop-blur-xl",
+        "rounded-2xl border border-white/10 bg-[#111111]/80 backdrop-blur-xl sm:rounded-[24px]",
         className
       )}
       {...props}
@@ -21,7 +21,7 @@ function CardContent({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  return <div className={cn("p-6", className)} {...props} />
+  return <div className={cn("p-4 sm:p-6", className)} {...props} />
 }
 
 export { Card, CardContent }
